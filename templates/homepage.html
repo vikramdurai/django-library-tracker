@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if staff %}
+<div>logged in as staff account {{ request.user.username }}</div>
+{% else %}
+<div>logged in as {{ request.user.username }}</div>
+{% endif %}
+
+{% endblock %}
