@@ -59,11 +59,12 @@ class Command(BaseCommand):
                         if x == "Y":
                             return True
                         return False
-                    p = Publication.objects.filter(code=i[6]).all()[0]
+                    p = Publication.objects.filter(code=i[6]).all()
                     if p:
                         # There's an existing copy of the book
                         # in the library
                         b = Book(publication=p, acc=i[7])
+                        p = p[0]
                         p.copies += 1
                         b.save()
                         p.save()

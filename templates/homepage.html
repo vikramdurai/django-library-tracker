@@ -1,11 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<h1>Welcome, {{ request.user.username }}</h1>
+<form action="/books/search" method="POST">
+    {% csrf_token %}
+    <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>
+</form>
+<h2>My borrowed books</h2>
+{% if borrowed_entries %}
+<table class="ui celled table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>ACC #</th>
+            <th>Date borrowed</th>
+            <th>Date to return</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in borrowed_entries %}
+        <tr>
+            <td><a href="{% url 'titles' i.book.publication.slug i.book.acc %}">{{ i.book.publication.title }}</a></td>
+            <td>{{ i.book.acc }}</td>
+            <td>{{ i.date }}</td>
+            <td>
 
-{% if staff %}
-<div>logged in as staff account {{ request.user.username }}</div>
+                {{ i.most_recent_extendlog.current_returndate }} <a href="{% url 'extend' i.book.publication.slug i.book.acc %}">Extend</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% else %}
-<div>logged in as {{ request.user.username }}</div>
+<p>No borrowed books.</p>
 {% endif %}
-
 {% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ book.publication.title }}</h1>
+<p>Author: {{ book.publication.author }}</p>
+<p>Accession number: {{ book.acc }}</p>
+<p>Genre: {{ book.publication.genre }}</p>
+<p>Code: {{ book.publication.code }}</p><br>
+
+<a href="{% url 'index' %}">
+    <div class="ui button">
+        Home
+    </div>
+</a>
+{% endblock %}

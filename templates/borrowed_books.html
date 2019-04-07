@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All borrowed books</h2>
+<div id="books">
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>ACC #</th>
+                <th>Borrower</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in entries %}
+            <tr>
+                <td><a href="#">{{ i.book.publication }}</a></td>
+                <td>{{ i.book.acc }}</td>
+                <td>{{ i.borrower }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome!</h2>
+<a href="{% url 'social:begin' 'google-oauth2' %}">Sign in with Google</a>
+{% endblock %}

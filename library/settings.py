@@ -26,7 +26,7 @@ SECRET_KEY = 'lhd6u*le)jonuy7j(mw%#@iu(!)duwi3qcrztr7d!m1(0a0#uh'
 DEBUG = True
 
 ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
-
+APPEND_SLASH = False
 
 # Application definition
 

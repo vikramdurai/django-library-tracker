@@ -14,14 +14,16 @@
                 <th>Title</th>
                 <th>Author</th>
                 <th>Genre</th>
+                <th>ACC #</th>
             </tr>
         </thead>
         <tbody>
             {% for i in results %}
             <tr>
-                <td><a href="#">{{ i.title }}</a></td>
-                <td>{{ i.author.name }}</td>
-                <td>{{ i.genre }}</td>
+                <td><a href="{% url 'titles' i.publication.slug i.acc %}">{{ i.publication.title }}</a></td>
+                <td>{{ i.publication.author.name }}</td>
+                <td>{{ i.publication.genre }}</td>
+                <td>{{ i.acc }}</td>
             </tr>
             {% endfor %}
         </tbody>

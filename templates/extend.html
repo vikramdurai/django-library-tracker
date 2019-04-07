@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Extend the return date for this book</h2>
+<form action="{% url 'extend' book.publication.slug book.acc %}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="ui button">Extend</button>
+</form>
+{% endblock %}
