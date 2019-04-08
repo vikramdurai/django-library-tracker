@@ -14,5 +14,7 @@ urlpatterns = [
     url(r'^titles/(?P<slug>[-\w\d]+)/book/(?P<acc>[-\w\d]+)/$',
         views.view_one_book, name="titles"),
     url(r'^extend/(?P<slug>[-\w\d]+)/book/(?P<acc>[-\w\d]+)/$',
-        views.extend, name="extend")
+        views.extend, name="extend"),
+    url(r'^checkout/(?P<slug>[-\w\d]+)/book/(?P<acc>[-\w\d]+)/$',
+        views.checkout, name="checkout"),
 ]

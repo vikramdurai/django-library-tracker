@@ -25,7 +25,7 @@
             <td>{{ i.date }}</td>
             <td>
 
-                {{ i.most_recent_extendlog.current_returndate }} <a href="{% url 'extend' i.book.publication.slug i.book.acc %}">Extend</a></td>
+                {{ i.most_recent_extendlog.new_returndate }} <a href="{% url 'extend' i.book.publication.slug i.book.acc %}">Extend</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -33,4 +33,5 @@
 {% else %}
 <p>No borrowed books.</p>
 {% endif %}
+<h2>Libraries I belong to</h2>
 {% endblock %}

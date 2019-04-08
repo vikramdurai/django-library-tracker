@@ -1,14 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ book.publication.title }}</h1>
-<p>Author: {{ book.publication.author }}</p>
-<p>Accession number: {{ book.acc }}</p>
-<p>Genre: {{ book.publication.genre }}</p>
-<p>Code: {{ book.publication.code }}</p><br>
-
-<a href="{% url 'index' %}">
-    <div class="ui button">
-        Home
+<div class="ui card">
+    <div class="content">
+        <div class="left floated meta">{{ book.publication.author }}</div>
+        <span class="right floated meta">
+            {% if book.available_goodreads %}
+            Available on goodreads
+            {% endif %}
+        </span>
     </div>
-</a>
+    <div class="content">
+        <div class="header">
+            {{ book.publication.title }}
+        </div>
+        <div class="meta">
+            {{ book.publication.date_added }}
+        </div>
+        <div class="description"></div>
+    </div>
+    <div class="extra content">
+        <div class="ui large transparent left icon input">
+            <i class="heart outline icon"></i>
+            <input type="text" placeholder="Add Comment...">
+        </div>
+    </div>
+</div>
 {% endblock %}

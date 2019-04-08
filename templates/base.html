@@ -2,13 +2,40 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
 </head>
 
 <body>
-    <div class="ui container">
-        {% block content %}
-        {% endblock %}
+    <div class="ui container main">
+        <div class="ui stackable grid">
+            <div class="ui sixteen wide column">
+                {% include 'breadcrumb.html' %}
+            </div>
+            <div class="ui four wide column">
+                <div class="ui vertical menu">
+                    <a href="{% url 'index' %}" class="active teal item">
+                        Dashboard
+                    </a>
+                    <a href="{% url 'search' %}" class="item">
+                        Search
+                    </a>
+                    <a href="" class="item">
+                        Borrowed
+                    </a>
+                </div>
+            </div>
+            <div class="ui twelve wide column">
+
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
     </div>
 </body>
+<style>
+    .main {
+        margin - top: 2em;
+    }
+</style>
 
 </html>

@@ -1,8 +1,11 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-from .forms import SearchForm, ExtendForm
-from .models import Author, Book, Publication, UserStaff, RegisterEntry, ExtendLog
+from django.utils import timezone
+
+from .forms import SearchForm, ExtendForm, CheckoutForm
+from .models import Author, Book, Publication, UserStaff, RegisterEntry, ExtendLog, Borrower
 from datetime import timedelta
 
 
@@ -24,16 +27,40 @@ def index(request):
 
 
 # Staff flows
+# TODO: implement a staff decorator thingy
 # checkout
-# @login_required
-# def checkout(request):
-#     user_staff = UserStaff.objects.filter(user=request.user).all()
-#     if not user_staff:
-#         return HttpResponseForbidden()
-#     form = CheckoutForm()
-#     return render(request, "checkout.html", {"form": form})
-# return
+@login_required
+def checkout(request, slug, acc):
+    print(acc)
+    user_staff = UserStaff.objects.get(user=request.user)
+    if not user_staff:
+        return HttpResponseForbidden()
+    form = None
+    if request.method == "POST":
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            # process here
+            re = RegisterEntry(book=Book.objects.get(acc=acc),
+                               date=timezone.now(),
+                               user=User.objects.get(
+                                   username=form.cleaned_data["user"]),
+                               borrower=Borrower.objects.get(
+                                   slug=form.cleaned_data["borrower"]),
+                               library=user_staff.library,
+                               action="borrow")
+            re.save()
+            e = ExtendLog(new_returndate=timezone.now() + timedelta(form.cleaned_data["returndate"]),
+                          returndate=re.most_recent_extendlog.returndate,
+                          entry=re)
+            e.save()
+            return redirect("index")
+    else:
+        form = CheckoutForm()
+    return render(request, "checkout.html", {"form": form, "book": Book.objects.get(acc=acc)})
+
+
 # view
+
 def view_books(request):
     user_staff = UserStaff.objects.filter(user=request.user).all()
     if not user_staff:
@@ -79,9 +106,8 @@ def extend(request, slug, acc):
         if form.is_valid():
             # process here
             x = form.cleaned_data["return_date"]
-            most_recent_log = regentry.most_recent_extendlog
-            e = ExtendLog(original_returndate=most_recent_log.original_returndate,
-                          current_returndate=most_recent_log.current_returndate + timedelta(x))
+            e = ExtendLog(entry=regentry, returndate=regentry.most_recent_extendlog.returndate,
+                          new_returndate=regentry.most_recent_extendlog.new_returndate + timedelta(x))
             e.save()
             regentry.most_recent_extendlog = e
             regentry.save()

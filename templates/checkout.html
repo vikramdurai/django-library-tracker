@@ -1,8 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<form action="/books/checkout" method="POST">
+<form action="/books/checkout/{{ book.publication.slug }}/book/{{ book.acc }}/" method="POST">
     {% csrf_token %}
     {{ form }}
     <button type="submit">Checkout</button>
 </form>
+<script>
+    $('.ui.search')
+        .search({
+            source: content
+        })
+        ;
+
+    var content = [
+        {% for i in users %}
+    { title: '{{ i.username }}' },
+    {% endfor %}
+  // etc
+];
+</script>
 {% endblock %}

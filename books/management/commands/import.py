@@ -63,7 +63,7 @@ class Command(BaseCommand):
                     if p:
                         # There's an existing copy of the book
                         # in the library
-                        b = Book(publication=p, acc=i[7])
+                        b = Book(publication=p, acc=i[7], date_added=parse_datetime(i[9]))
                         p = p[0]
                         p.copies += 1
                         b.save()
@@ -74,8 +74,7 @@ class Command(BaseCommand):
                         p = Publication(sno=i[1], author=a, title=i[3], price=(lambda x: int(x) if x else 0)(i[4]),
                                         genre=i[5], code=i[6],
                                         available_goodreads=goodreads_converter(
-                                            i[8]),
-                                        date_added=parse_datetime(i[9]))
+                                            i[8]))
                         p.save()
                         b = Book(publication=p, acc=i[7])
                         p.copies += 1
