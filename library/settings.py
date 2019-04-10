@@ -97,7 +97,8 @@ DATABASES = {
 }
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
-LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = "bye_bye"
+LOGIN_REDIRECT_URL = 'choose_library'
 # SOCIAL_AUTH_GOOGLE_SECRET = "ayQUNWK29BEebsPuJ9A-IkNz"
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "wfJQrNBOWrb7W-ljtE30-AM7"
 # SOCIAL_AUTH_GOOGLE_KEY = "800802190648-gjme7qk64su0t6hreph52u2iagb19acm.apps.googleusercontent.com"

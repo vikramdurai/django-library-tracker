@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+{% if success %}
+<p>Success! <a href="{% url 'newbook' %}">Add a book copy</a> of this publication</p>
+{% endif %}
+<a href="#" onclick="reveal()">Automatically make a book using ISBN</a><br>
+<div id="isbn_div" style="display:none">
+    <input type="text" class="ui input" id="isbn_input" placeholder="Insert the ISBN">
+    <button onclick="isbn()">ISBN search through Google Books</button>
+    <!-- why, google, why must you own the internet like this -->
+    powered by Google
+    <br>
+</div>
+<form action="{% url 'newpublication' %}" method="POST" class="ui form">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit">Add title</button>
+</form>
+<script>
+    function reveal() {
+        $("#isbn_div")
+            .transition("fly left")
+    }
+    function isbn() {
+        var isbn_code = $("#isbn_input").val();
+        console.log(isbn_code)
+        $("#isbn_input").val("");
+        fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn_code)
+            .then(data => data.json())
+            .then(function (res) {
+                var isbn_data = res.items[0].volumeInfo;
+                var data = {
+                    title: (function () { return isbn_data.subtitle ? isbn_data.title + isbn_data.subtitle : isbn_data.title })(),
+                    author: isbn_data.authors[0],
+                    // code: isbn_data.authors[0].split(" ")[0].slice(0, 1) + isbn_data.authors[0].split(" ")[1].slice(0, 1),
+                    genre: (function () { return isbn_data["categories"] ? isbn_data["categories"] : "No data available" }()),
+                }
+                $("#b-title").val(data.title);
+                $('#b-author').append('<option value="' + data.author + '" selected>' + data.author + '</option>');
+                $("#b-genre").val(data.genre);
+            })
+            .catch(err => {
+                console.log("An error occurred:", err)
+            })
+    }
+</script>
+{% endblock %}

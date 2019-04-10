@@ -4,35 +4,101 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.utils import timezone
 
-from .forms import SearchForm, ExtendForm, CheckoutForm
-from .models import Author, Book, Publication, UserStaff, RegisterEntry, ExtendLog, Borrower
+from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, ChooseLibraryForm
+from .models import Library, Author, Book, Publication, UserStaff, UserMember, RegisterEntry, ExtendLog, Borrower
 from datetime import timedelta
+
+
+def staff(request):
+    user_staff = UserStaff.objects.get(user=request.user)
+    if user_staff:
+        return user_staff
+    return False
+
+
+def choose_library(request):
+    if request.user.social_auth.exists():
+        return redirect("index")
+    form = None
+    if request.method == "POST":
+        form = ChooseLibraryForm(request.POST)
+        if form.is_valid():
+            lb = Library.objects.get(id=form.cleaned_data["library"])
+            user_member = UserMember(user=request.user, library=lb)
+            user_member.save()
+            return redirect("index")
+    else:
+        form = ChooseLibraryForm()
+    return render(request, "choose_library.html", {"form":form})
 
 
 def index(request):
     if not request.user.is_authenticated():
         return render(request, "unlogged_home.html")
-    user_staff = UserStaff.objects.filter(user=request.user).all()
-    # if user_staff:
-    # render a staff homepage instead
-    # return render(request, "homepage.html", {"staff": True})
-    # form = SearchForm()
-    # TODO: this also displays returned books, fix later
-    reg_entries = [i for i in list(
-        RegisterEntry.objects.all()) if i.user]
+    user_staff = staff(request)
+    if user_staff:
+        # render a staff homepage instead
+        return render(request, "staff_home.html", {"form": SearchForm(), "user": request.user, "u_staff": user_staff})
+    reg_entries = RegisterEntry.get_all_borrowed_entries()
     borrowed_entries = [
         i for i in reg_entries if i.user.username == request.user.username]
-    ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries}
+    user_libraries = [
+        i.library for i in UserMember.objects.all() if i.user == request.user]
+    ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries,
+           "user_libraries": user_libraries}
     return render(request, "homepage.html", ctx)
-
 
 # Staff flows
 # TODO: implement a staff decorator thingy
+# new_book
+@login_required
+def new_book(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden()
+    form = None
+    if request.method == "POST":
+        form = NewBookForm(request.POST)
+        if form.is_valid():
+            b = Book(publication=Publication.objects.get(id=form.cleaned_data["publication"]),
+                     date_added=timezone.now(), acc=form.cleaned_data["acc"], library=user_staff.library)
+            b.save()
+            return redirect("titles", slug=b.publication.slug, acc=b.acc)
+    else:
+        form = NewBookForm()
+    return render(request, "newbook.html", {"form": form})
+
+
+# new_publication
+@login_required
+def new_publication(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden()
+    form = None
+    if request.method == "POST":
+        form = NewPubForm(request.POST)
+        if form.is_valid():
+            p = Publication(
+                sno=form.cleaned_data["sno"],
+                title=form.cleaned_data["title"],
+                author=Author.objects.get(id=form.cleaned_data["author"]),
+                code=form.cleaned_data["code"],
+                available_goodreads=form.cleaned_data["avgood"],
+                genre=form.cleaned_data["genre"],
+                slug="",
+            )
+            p.save()
+            return render(request, "newpub.html", {"success": True, "form": form})
+    else:
+        form = NewPubForm()
+    return render(request, "newpub.html", {"form": form})
+
 # checkout
 @login_required
 def checkout(request, slug, acc):
     print(acc)
-    user_staff = UserStaff.objects.get(user=request.user)
+    user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden()
     form = None
@@ -58,16 +124,45 @@ def checkout(request, slug, acc):
         form = CheckoutForm()
     return render(request, "checkout.html", {"form": form, "book": Book.objects.get(acc=acc)})
 
-
-# view
-
-def view_books(request):
-    user_staff = UserStaff.objects.filter(user=request.user).all()
+# checkin
+@login_required
+def checkin(request, slug, acc):
+    user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden()
-    borrowed_entries = list(RegisterEntry.objects.all())
+    b = Book.objects.get(acc=acc)
+    print(RegisterEntry.objects.get(book=b))
+    print(RegisterEntry.objects.filter(library=user_staff.library))
+    bre = RegisterEntry.objects.get(book=b, library=user_staff.library)
+    re = RegisterEntry(book=b, date=timezone.now(),
+                       user=bre.user, borrower=bre.borrower, action="return")
+    re.save()
+    return redirect("index")
 
-    return render(request, "borrowed_books.html", {"entries": borrowed_entries})
+# add new staff account
+@login_required
+def addstaff(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden()
+    form = None
+    if request.method == "POST":
+        form = UserStaffForm(request.POST)
+        if form.is_valid():
+            u = User.objects.get(username=form.cleaned_data["username"])
+            UserStaff(user=u, library=user_staff.library).save()
+            return redirect("index")
+    else:
+        form = UserStaffForm()
+    return render(request, "addstaff.html", {"form": form})
+
+# view
+@login_required
+def view_books(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden()
+    return render(request, "borrowed_books.html", {"entries": RegisterEntry.get_all_borrowed_entries()})
 
 # User flows
 # search
@@ -95,9 +190,6 @@ def search(request):
 @login_required
 def extend(request, slug, acc):
     book = Book.objects.get(acc=acc)
-    # the most recent action will be borrow
-    # otherwise the user will not come to this
-    # page. TODO: safeguard this
     regentry = RegisterEntry.objects.filter(
         book=book, action="borrow")[0]
     form = None
@@ -119,5 +211,13 @@ def extend(request, slug, acc):
 @login_required
 def view_one_book(request, slug, acc):
     book = Book.objects.get(acc=acc)
-    ctx = {"book": book}
+    user_staff = UserStaff.objects.filter(user=request.user).all()
+    ctx = None
+    if not user_staff:
+        ctx = {"book": book}
+    else:
+        ctx = {"book": book, "user_staff": True}
     return render(request, "book.html", ctx)
+
+def bye_bye(request):
+    return render(request, "bye.html")

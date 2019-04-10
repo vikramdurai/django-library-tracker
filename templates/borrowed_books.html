@@ -8,14 +8,16 @@
                 <th>Title</th>
                 <th>ACC #</th>
                 <th>Borrower</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for i in entries %}
             <tr>
-                <td><a href="#">{{ i.book.publication }}</a></td>
+                <td><a href="{% url 'titles' i.book.publication.slug i.book.acc %}">{{ i.book.publication }}</a></td>
                 <td>{{ i.book.acc }}</td>
                 <td>{{ i.borrower }}</td>
+                <td><a href="{% url 'checkin' i.book.publication.slug i.book.acc %}">Return</a></td>
             </tr>
             {% endfor %}
         </tbody>

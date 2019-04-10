@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Author, Publication, Book, RegisterEntry, Borrower, UserStaff, ExtendLog
+from .models import Library, Author, Publication, Book, RegisterEntry, Borrower, UserStaff, ExtendLog
 
 
 class PublicationAdmin(admin.ModelAdmin):
@@ -27,3 +27,4 @@ admin.site.register(UserStaff)
 admin.site.register(RegisterEntry, RegisterEntryAdmin)
 admin.site.register(ExtendLog, ExtendLogAdmin)
 admin.site.register(Borrower)
+admin.site.register(Library)

@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
 </head>
@@ -8,9 +9,6 @@
 <body>
     <div class="ui container main">
         <div class="ui stackable grid">
-            <div class="ui sixteen wide column">
-                {% include 'breadcrumb.html' %}
-            </div>
             <div class="ui four wide column">
                 <div class="ui vertical menu">
                     <a href="{% url 'index' %}" class="active teal item">
@@ -19,9 +17,20 @@
                     <a href="{% url 'search' %}" class="item">
                         Search
                     </a>
-                    <a href="" class="item">
-                        Borrowed
+                    {% if user_staff or u_staff %}
+                    <a href="{% url 'borrowed_books' %}" class="item">
+                        Borrowed books
                     </a>
+                    <a href="{% url 'newbook' %}" class="item">
+                        New book
+                    </a>
+                    <a href="{% url 'newpublication' %}" class="item">
+                        New book title
+                    </a>
+                    <a href="{% url 'addstaff' %}" class="item">
+                        Add a staff account
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             <div class="ui twelve wide column">
@@ -34,7 +43,7 @@
 </body>
 <style>
     .main {
-        margin - top: 2em;
+        margin-top: 2em;
     }
 </style>
 

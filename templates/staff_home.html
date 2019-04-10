@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Welcome, {{ user.username }}</h1>
-<p>You belong to: {{ u_staff.library }}</p>
+<a href="{% url 'logout' %}">Log out</a>
+<p>You belong to: <strong>{{ u_staff.library }}</strong></p>
 <form action="/books/search" method="POST">
     {% csrf_token %}
     <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>
 </form>
-Do something:
-<a href="{% url 'borrowed' %}">View all borrowed books</a>
-<a href="{% url 'checkout' %}">Borrow a book for someone</a>
-<a href="{% url 'checkin' %}">Make a book available for borrowing again</a>
+Do something: <br>
+<a href="{% url 'borrowed_books' %}">View all borrowed books</a><br>
+<a href="{% url 'addstaff' %}">Add a new staff account</a>
 {% endblock %}

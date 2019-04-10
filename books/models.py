@@ -2,12 +2,17 @@ from django.db import models
 from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import User
 from datetime import timedelta
 # Create your models here.
 
 
 class Library(models.Model):
     name = models.CharField(max_length=255)
+    default = models.IntegerField(default=20)
+
+    def __str__(self):
+        return self.name
 
 
 class Author(models.Model):
@@ -32,7 +37,7 @@ class Publication(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.title)
         super(Publication, self).save(*args, **kwargs)
 
     def get_copies(self):
@@ -65,6 +70,9 @@ class Borrower(models.Model):
     def __str__(self):
         return self.name
 
+class UserMember(models.Model):
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
+    library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
 
 class UserStaff(models.Model):
     # UserStaff represents a staff account.
@@ -85,9 +93,11 @@ class UserStaff(models.Model):
 
 
 class ExtendLog(models.Model):
-    new_returndate = models.DateTimeField(null=True)
-    returndate = models.DateTimeField(null=True)
     entry = models.ForeignKey('RegisterEntry', null=True)
+    new_returndate = models.DateTimeField(
+        null=True)
+    returndate = models.DateTimeField(
+        null=True)
 
     def __str__(self):
         return "New return date: %s Old date: %s" % (self.new_returndate, self.returndate)
@@ -103,12 +113,12 @@ class RegisterEntry(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
 
     def save(self, *args, **kwargs):
-        if not self.id:
+        if not self.id and self.action == "borrow":
             # create a new Log here
             # I'm just hardcoding the initial return date here
             # which is 20
-            e = ExtendLog(entry=self, new_returndate=self.date + timedelta(20),
-                          returndate=self.date + timedelta(20))
+            e = ExtendLog(entry=self, new_returndate=self.library.default_returndate,
+                          returndate=self.library.default_returndate)
             super(RegisterEntry, self).save(*args, **kwargs)
             e.save()
             self.most_recent_extendlog = e
@@ -116,3 +126,10 @@ class RegisterEntry(models.Model):
 
     def __str__(self):
         return "Action: %s Book: %s Borrower: %s" % (self.action, self.book, self.borrower)
+
+    @staticmethod
+    def get_all_borrowed_entries():
+        x = RegisterEntry.objects.filter(action="borrow")
+        y = [i.book for i in RegisterEntry.objects.filter(action="return")]
+        z = x.exclude(book__in=y)
+        return z

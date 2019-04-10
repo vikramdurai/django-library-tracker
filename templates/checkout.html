@@ -5,18 +5,4 @@
     {{ form }}
     <button type="submit">Checkout</button>
 </form>
-<script>
-    $('.ui.search')
-        .search({
-            source: content
-        })
-        ;
-
-    var content = [
-        {% for i in users %}
-    { title: '{{ i.username }}' },
-    {% endfor %}
-  // etc
-];
-</script>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% block content %}
 <div class="ui card">
     <div class="content">
-        <div class="left floated meta">{{ book.publication.author }}</div>
+        <div class="left floated meta">Author: {{ book.publication.author }}</div>
         <span class="right floated meta">
             {% if book.available_goodreads %}
             Available on goodreads
@@ -14,14 +14,19 @@
             {{ book.publication.title }}
         </div>
         <div class="meta">
-            {{ book.publication.date_added }}
+            Added on {{ book.date_added }}
         </div>
-        <div class="description"></div>
+        <div class="description">
+            Accession number: <strong>{{ book.acc }}</strong> <br>
+            Genre: <strong>{{ book.publication.genre }}</strong> <br>
+            Library: <strong>{{ book.library }}</strong> <br>
+        </div>
     </div>
     <div class="extra content">
-        <div class="ui large transparent left icon input">
-            <i class="heart outline icon"></i>
-            <input type="text" placeholder="Add Comment...">
+        <div class="ui transparent left icon input">
+            {% if user_staff %}
+            <a href="{% url 'checkout' book.publication.slug book.acc %}">Borrow</a>
+            {% endif %}
         </div>
     </div>
 </div>
