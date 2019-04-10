@@ -1,3 +1,4 @@
+from .secrets import *
 """
 Django settings for library project.
 
@@ -19,12 +20,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'lhd6u*le)jonuy7j(mw%#@iu(!)duwi3qcrztr7d!m1(0a0#uh'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = False
+SECRET_KEY = 'lhd6u*le)jonuy7j(mw%#@iu(!)duwi3qcrztr7d!m1(0a0#uh'
 ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
 APPEND_SLASH = False
 
@@ -99,10 +97,6 @@ LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = "bye_bye"
 LOGIN_REDIRECT_URL = 'choose_library'
-# SOCIAL_AUTH_GOOGLE_SECRET = "ayQUNWK29BEebsPuJ9A-IkNz"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "wfJQrNBOWrb7W-ljtE30-AM7"
-# SOCIAL_AUTH_GOOGLE_KEY = "800802190648-gjme7qk64su0t6hreph52u2iagb19acm.apps.googleusercontent.com"
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "800802190648-536d0v59btooce66bdamgs2riok234kg.apps.googleusercontent.com"
 
 
 # Password validation
