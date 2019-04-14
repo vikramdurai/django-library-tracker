@@ -3,6 +3,6 @@
 <form action="{% url 'newbook' %}" method="POST" class="ui form">
     {% csrf_token %}
     {{ form }}
-    <button type="submit">Add title</button>
+    <button type="submit" class="button ui">Add title</button>
 </form>
 {% endblock %}
