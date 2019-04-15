@@ -10,7 +10,8 @@ class SearchForm(forms.Form):
 
 
 class CheckoutForm(forms.Form):
-    USER_CHOICES = [[i.username, i.username] for i in User.objects.all()]
+    # USER_CHOICES = [[i.username, i.username] for i in User.objects.all()]
+    USER_CHOICES = []
     BORROWER_CHOICES = [[i.slug, i.name] for i in Borrower.objects.all()]
     borrower = forms.ChoiceField(
         label="Borrower", choices=BORROWER_CHOICES, widget=forms.Select(
@@ -28,8 +29,9 @@ class ExtendForm(forms.Form):
 
 
 class UserStaffForm(forms.Form):
-    USER_CHOICES = [[i.username, i.username]
-                    for i in User.objects.all() if not UserStaff.objects.filter(user=i) and not (i.username == "admin")]
+    # USER_CHOICES = [[i.username, i.username]
+                    # for i in User.objects.all() if not UserStaff.objects.filter(user=i) and not (i.username == "admin")]
+    USER_CHOICES = []
     username = forms.ChoiceField(label="Which user to add", choices=USER_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown"}, choices=USER_CHOICES))
 
