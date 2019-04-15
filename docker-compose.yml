@@ -1,11 +1,10 @@
-version: '3'
+version: '3.7'
 
 services:
   db:
     image: postgres
     volumes:
-        - /var/lib/postgresql
-    command: "true"
+      - postgres_data:/var/lib/postgresql/data/
   web:
     build: .
     command: bash -c "python3 manage.py migrate --noinput && python3 manage.py runserver 0.0.0.0:8000"
@@ -15,3 +14,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
+
+volumes:
+  postgres_data:
