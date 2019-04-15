@@ -29,8 +29,6 @@ APPEND_SLASH = False
 # Application definition
 
 INSTALLED_APPS = [
-    "polls.apps.PollsConfig",
-    "books.apps.BooksConfig",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "django.contrib.postgres",
-    'social_django'
+    'social_django',
+    "polls.apps.PollsConfig",
+    "books.apps.BooksConfig"
 ]
 
 MIDDLEWARE = [
