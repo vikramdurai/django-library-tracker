@@ -12,7 +12,8 @@ class SearchForm(forms.Form):
 class CheckoutForm(forms.Form):
     # USER_CHOICES = [[i.username, i.username] for i in User.objects.all()]
     USER_CHOICES = []
-    BORROWER_CHOICES = [[i.slug, i.name] for i in Borrower.objects.all()]
+    BORROWER_CHOICES = []
+    # BORROWER_CHOICES = [[i.slug, i.name] for i in Borrower.objects.all()]
     borrower = forms.ChoiceField(
         label="Borrower", choices=BORROWER_CHOICES, widget=forms.Select(
             attrs={"class": "ui search selection dropdown"}, choices=BORROWER_CHOICES))
@@ -37,14 +38,16 @@ class UserStaffForm(forms.Form):
 
 
 class NewBookForm(forms.Form):
-    PUBLICATION_CHOICES = [[i.id, i.title] for i in Publication.objects.all()]
+    PUBLICATION_CHOICES = []
+    # PUBLICATION_CHOICES = [[i.id, i.title] for i in Publication.objects.all()]
     publication = forms.ChoiceField(label="Publication/title", choices=PUBLICATION_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown"}, choices=PUBLICATION_CHOICES))
     acc = forms.CharField(label="Accession number", max_length=255)
 
 
 class NewPubForm(forms.Form):
-    AUTHOR_CHOICES = [[i.id, i.name] for i in Author.objects.all()]
+    AUTHOR_CHOICES = []
+    # AUTHOR_CHOICES = [[i.id, i.name] for i in Author.objects.all()]
     author = forms.ChoiceField(label="Author", choices=AUTHOR_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown", "id": "b-author"}, choices=AUTHOR_CHOICES))
     avgood = forms.BooleanField(label="Available on Goodreads.com", widget=forms.CheckboxInput(
@@ -62,6 +65,7 @@ class NewPubForm(forms.Form):
 
 
 class ChooseLibraryForm(forms.Form):
-    LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
+    LIBRARY_CHOICES = []
+    # LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
     library = forms.ChoiceField(label="Available libraries", choices=LIBRARY_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown"}, choices=LIBRARY_CHOICES))
