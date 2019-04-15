@@ -3,9 +3,12 @@ version: '3'
 services:
   db:
     image: postgres
+    volumes:
+        - /var/lib/postgresql
+    command: "true"
   web:
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: python manage.py migrate --noinput && python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
