@@ -210,13 +210,15 @@ def extend(request, slug, acc):
 # view
 @login_required
 def view_one_book(request, slug, acc):
+    from django.contrib.staticfiles.templatetags.staticfiles import static
     book = Book.objects.get(acc=acc)
+    book_image = static("books/"+ book.publication.slug +".jpg")
     user_staff = UserStaff.objects.filter(user=request.user).all()
     ctx = None
     if not user_staff:
-        ctx = {"book": book}
+        ctx = {"book": book, "book_image": book_image}
     else:
-        ctx = {"book": book, "user_staff": True}
+        ctx = {"book": book, "user_staff": True, "book_image": book_image}
     return render(request, "book.html", ctx)
 
 def bye_bye(request):

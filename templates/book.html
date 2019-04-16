@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load staticfiles %}
 <div class="ui card">
     <div class="content">
         <div class="left floated meta">Author: {{ book.publication.author }}</div>
@@ -8,6 +9,9 @@
             Available on goodreads
             {% endif %}
         </span>
+    </div>
+    <div class="image">
+        <img src="/static/books/image_{{ book.publication.slug }}.jpg">
     </div>
     <div class="content">
         <div class="header">
@@ -25,7 +29,8 @@
     <div class="extra content">
         <div class="ui transparent left icon input">
             {% if user_staff %}
-            <a href="{% url 'checkout' book.publication.slug book.acc %}">Borrow</a>
+            <a href="{% url '
+            checkout' book.publication.slug book.acc %}">Borrow</a>
             {% endif %}
         </div>
     </div>
