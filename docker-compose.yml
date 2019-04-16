@@ -7,13 +7,29 @@ services:
       - postgres_data:/var/lib/postgresql/data/
   web:
     build: .
-    command: bash -c "python3 manage.py migrate --noinput && python3 manage.py runserver 0.0.0.0:8000"
+    command: gunicorn library.wsgi:application --bind 0.0.0.0:8000
+    expose:
+      - 8000
     volumes:
       - .:/code
+      - static_volume:/code/staticfiles/
     ports:
       - "8000:8000"
+    environment:
+      - SQL_HOST=db
+      - SQL_PORT=5432
+      - DATABASE=postgres
     depends_on:
       - db
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/code/staticfiles/
+    ports:
+      - 1337:80
+    depends_on:
+      - web
 
 volumes:
   postgres_data:
+  static_volume:
