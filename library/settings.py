@@ -21,10 +21,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 SECRET_KEY = 'lhd6u*le)jonuy7j(mw%#@iu(!)duwi3qcrztr7d!m1(0a0#uh'
 ALLOWED_HOSTS = ["0.0.0.0", "localhost", "everylibrary.co"]
-APPEND_SLASH = False
 
 # Application definition
 
@@ -96,7 +95,7 @@ DATABASES = {
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = "bye_bye"
-LOGIN_REDIRECT_URL = 'choose_library'
+LOGIN_REDIRECT_URL = '/'
 
 
 # Password validation

@@ -3,6 +3,7 @@ from django.template.defaultfilters import slugify
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.utils import timezone
 from datetime import timedelta
 # Create your models here.
 
@@ -34,6 +35,7 @@ class Publication(models.Model):
     genre = models.CharField(max_length=200, null=True)
     price = models.IntegerField(null=True)
     slug = models.SlugField(max_length=255)
+    # image = models.ImageField(null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -70,9 +72,21 @@ class Borrower(models.Model):
     def __str__(self):
         return self.name
 
+
+class UserJoinRequest(models.Model):
+    user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
+    library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
+    borrower = models.ForeignKey(
+        Borrower, null=True, on_delete=models.SET_NULL)
+    approved = models.BooleanField(default=False)
+
+
 class UserMember(models.Model):
     user = models.ForeignKey(User, null=False, on_delete=models.CASCADE)
     library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
+    borrower = models.ForeignKey(
+        Borrower, null=True, on_delete=models.SET_NULL)
+
 
 class UserStaff(models.Model):
     # UserStaff represents a staff account.
@@ -110,15 +124,15 @@ class RegisterEntry(models.Model):
     action = models.CharField(max_length=6)
     library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
     borrower = models.ForeignKey(Borrower, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
+    user = models.ForeignKey(UserMember, null=True)
 
     def save(self, *args, **kwargs):
         if not self.id and self.action == "borrow":
             # create a new Log here
             # I'm just hardcoding the initial return date here
             # which is 20
-            e = ExtendLog(entry=self, new_returndate=self.library.default_returndate,
-                          returndate=self.library.default_returndate)
+            e = ExtendLog(entry=self, new_returndate=timezone.now() + timedelta(self.library.default),
+                          returndate=timezone.now() + timedelta(self.library.default))
             super(RegisterEntry, self).save(*args, **kwargs)
             e.save()
             self.most_recent_extendlog = e
@@ -129,7 +143,17 @@ class RegisterEntry(models.Model):
 
     @staticmethod
     def get_all_borrowed_entries():
-        x = RegisterEntry.objects.filter(action="borrow")
-        y = [i.book for i in RegisterEntry.objects.filter(action="return")]
-        z = x.exclude(book__in=y)
-        return z
+        all_borrowed_entries = RegisterEntry.objects.filter(action="borrow")
+        all_returned_entries = [
+            i.book for i in RegisterEntry.objects.filter(action="return")]
+        borrowed_entries_that_are_not_in_returned_entries = all_borrowed_entries.exclude(
+            book__in=all_returned_entries)
+        return borrowed_entries_that_are_not_in_returned_entries
+
+    @staticmethod
+    def is_borrowed(b):
+        # this checks to see if the book 'b' is among
+        # the currently borrowed books
+        if RegisterEntry.get_all_borrowed_entries().filter(book=b).exists():
+            return True
+        return False

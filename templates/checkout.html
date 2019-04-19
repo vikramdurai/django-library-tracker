@@ -1,8 +1,67 @@
 {% extends "base.html" %}
 {% block content %}
-<form action="/books/checkout/{{ book.publication.slug }}/book/{{ book.acc }}/" method="POST">
+<form action="{% url 'checkout' %}" class="ui form" method="POST">
     {% csrf_token %}
-    {{ form }}
-    <button type="submit">Checkout</button>
+    {{form.acc}}
+    <div class="ui search" id="booksearch">
+        {{form.book}}
+        <div class="results"></div>
+    </div>
+    <div class="ui search" id="usersearch">
+        {{ form.user }}
+        <div class="results"></div>
+    </div>
+    {{form.returndate}}
+    <button type="submit" class="ui button">Checkout</button>
 </form>
+<script>
+    $('.ui.search#usersearch')
+        .search({
+            // change search endpoint to a custom endpoint by manipulating apiSettings
+            apiSettings: {
+                url: '/apisearch/?name={query}&&origin=checkout',
+                onResponse: function (response) {
+                    console.log(response);
+                    var res = {
+                        results: []
+                    }
+                    response.results.forEach(function (result) {
+                        res.results.push({ 'title': result, 'description': result });
+                    })
+                    console.log(res);
+                    return res
+                }
+            },
+            onSelect: function (result, response) {
+                $('input[name="user"]').val(result.title);
+            },
+        })
+        ;
+    $('.ui.search#booksearch')
+        .search({
+            // change search endpoint to a custom endpoint by manipulating apiSettings
+            apiSettings: {
+                url: '/apisearch/?name={query}&&origin=books',
+                onResponse: function (response) {
+                    if (response.msg) {
+                        console.log(response.msg);
+                    }
+                    var res = {
+                        results: []
+                    }
+                    response.results.forEach(function (result) {
+                        res.results.push({ 'title': result.title, 'description': result.description, "id": result.acc });
+                    })
+                    console.log(res);
+                    return res
+                }
+            },
+            onSelect: function (result) {
+                // $('input[name="book"]').val(result.title);
+                console.log("selected acc:", result.id);
+                $("input[name='acc']").val(result.id);
+            },
+        })
+        ;
+</script>
 {% endblock %}

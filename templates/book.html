@@ -26,13 +26,5 @@
             Library: <strong>{{ book.library }}</strong> <br>
         </div>
     </div>
-    <div class="extra content">
-        <div class="ui transparent left icon input">
-            {% if user_staff %}
-            <a href="{% url '
-            checkout' book.publication.slug book.acc %}">Borrow</a>
-            {% endif %}
-        </div>
-    </div>
 </div>
 {% endblock %}

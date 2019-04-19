@@ -7,7 +7,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
   web:
     build: .
-    command: gunicorn library.wsgi:application --bind 0.0.0.0:8000
+    restart: always
+    command: gunicorn library.wsgi:application --bind 0.0.0.0:8000 --reload
     expose:
       - 8000
     volumes:
@@ -22,11 +23,12 @@ services:
     depends_on:
       - db
   nginx:
+    restart: always
     build: ./nginx
     volumes:
       - static_volume:/code/staticfiles/
     ports:
-      - 1337:80
+      - 80:80
     depends_on:
       - web
 

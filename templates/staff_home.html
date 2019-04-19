@@ -3,7 +3,7 @@
 <h1>Welcome, {{ user.username }}</h1>
 <a href="{% url 'logout' %}">Log out</a>
 <p>You belong to: <strong>{{ u_staff.library }}</strong></p>
-<form action="/books/search" method="POST">
+<form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
     <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>
 </form>

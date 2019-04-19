@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+{% load book_extras %}
+
+<h2>All pending join requests</h2>
+<div id="requests">
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>House</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in user_join_requests %}
+            <tr>
+                <td>{{ i.user.username }}</td>
+                <td>{{ i.borrower }}</td>
+                <td>
+                    <form method="POST" action="{% url 'approverequest' %}">
+                        {% csrf_token %}
+                        {% get_form i.id as form %}{{form.id}}<button class="ui button" type="submit">Approve</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

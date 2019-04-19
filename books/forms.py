@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from .models import Author, Book, Publication, Borrower, Library, UserStaff
 from django.core.validators import MaxValueValidator
 
+print(Library.objects.all())
+LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
+
 
 class SearchForm(forms.Form):
     search_text = forms.CharField(label="", max_length=200, widget=forms.TextInput(
@@ -10,15 +13,11 @@ class SearchForm(forms.Form):
 
 
 class CheckoutForm(forms.Form):
-    USER_CHOICES = [[i.username, i.username] for i in User.objects.all()]
-    BORROWER_CHOICES = [[i.slug, i.name] for i in Borrower.objects.all()]
-    borrower = forms.ChoiceField(
-        label="Borrower", choices=BORROWER_CHOICES, widget=forms.Select(
-            attrs={"class": "ui search selection dropdown"}, choices=BORROWER_CHOICES))
-    user = forms.ChoiceField(label="", choices=USER_CHOICES, widget=forms.Select(
-        attrs={"class": "ui search selection dropdown"}, choices=USER_CHOICES))
-    returndate = forms.IntegerField(
-        label="Return date (user can extend later) ", widget=forms.NumberInput(attrs={"class": "ui"}))
+    book = forms.CharField(label="Book to borrow", max_length=255,
+                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "Book to borrow"}))
+    user = forms.CharField(label="User", max_length=255,
+                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "User to borrow from"}))
+    acc = forms.CharField(label="", max_length=255, widget=forms.HiddenInput())
 
 
 class ExtendForm(forms.Form):
@@ -59,7 +58,20 @@ class NewPubForm(forms.Form):
     ))
 
 
-class ChooseLibraryForm(forms.Form):
-    LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
-    library = forms.ChoiceField(label="Available libraries", choices=LIBRARY_CHOICES, widget=forms.Select(
-        attrs={"class": "ui search selection dropdown"}, choices=LIBRARY_CHOICES))
+class UserConfigForm(forms.Form):
+    borrower = forms.CharField(label="", required=False, max_length=255, widget=forms.TextInput(
+        attrs={'placeholder': 'Enter your place of residence, e.g "F10, Mosaic, GoodEarth Malhar"', 'class': 'prompt'}))
+    library = forms.ChoiceField(label="Library to be a part of", choices=LIBRARY_CHOICES, widget=forms.Select(
+        attrs={"class": "ui search selection dropdown"}))
+
+    def clean(self):
+        data = self.cleaned_data
+        if not "borrower" in data:
+            print("Borrower was nothing")
+            data["borrower"] = ""
+            return data
+
+
+class UserJoinApproveForm(forms.Form):
+    id = forms.IntegerField(
+        label="", widget=forms.NumberInput(attrs={"type": "hidden"}))

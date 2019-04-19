@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Choose a library to be a part of</h2>
-<form action="{% url 'choose_library' %}" method="POST" class="ui form">
-    {% csrf_token %}
-    {{ form }}
-    <button type="submit"></button>
-</form>
-{% endblock %}

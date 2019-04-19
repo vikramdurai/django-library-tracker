@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Enter a few more details</h2>
+<form action="{% url 'index' %}" method="POST" class="ui form">
+    {% csrf_token %}
+    {{ form.library }}
+    {% if show_borrower %}
+    <div class="ui search">
+        {{ form.borrower }}
+        <div class="results"></div>
+    </div>
+    {% endif %}
+    <button class="ui button" type="submit">Submit</button>
+</form>
+
+<script>
+    $('.ui.search')
+        .search({
+            // change search endpoint to a custom endpoint by manipulating apiSettings
+            apiSettings: {
+                url: '/apisearch/?name={query}&&origin=userconfig',
+                onSelect: function (result) {
+                    $('input[name="borrower"]').val(result.title);
+                },
+                onResponse: function (response) {
+                    console.log(response);
+                    var res = {
+                        results: []
+                    }
+                    response.results.forEach(function (result) {
+                        res.results.push({ 'title': result, 'description': result });
+                    })
+                    console.log(res);
+                    return res
+                }
+            },
+        })
+        ;
+
+</script>
+{% endblock %}

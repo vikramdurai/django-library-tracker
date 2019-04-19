@@ -16,7 +16,11 @@
             <tr>
                 <td><a href="{% url 'titles' i.book.publication.slug i.book.acc %}">{{ i.book.publication }}</a></td>
                 <td>{{ i.book.acc }}</td>
+                {% if not i.borrower %}
+                <td>{{ i.user.borrower }}</td>
+                {% else %}
                 <td>{{ i.borrower }}</td>
+                {% endif %}
                 <td><a href="{% url 'checkin' i.book.publication.slug i.book.acc %}">Return</a></td>
             </tr>
             {% endfor %}

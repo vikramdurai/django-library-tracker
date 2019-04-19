@@ -2,54 +2,140 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+from django.template.defaultfilters import slugify
 from django.utils import timezone
 
-from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, ChooseLibraryForm
-from .models import Library, Author, Book, Publication, UserStaff, UserMember, RegisterEntry, ExtendLog, Borrower
+from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, UserConfigForm
+from .models import Library, Author, Book, Publication, UserStaff, UserMember, UserJoinRequest, RegisterEntry, ExtendLog, Borrower
 from datetime import timedelta
-
+from json import dumps
 
 def staff(request):
-    user_staff = UserStaff.objects.get(user=request.user)
-    if user_staff:
-        return user_staff
+    try:
+        user_staff = UserStaff.objects.get(user=request.user)
+        if user_staff:
+            return user_staff
+    except:
+        pass
     return False
-
-
-def choose_library(request):
-    if request.user.social_auth.exists():
-        return redirect("index")
-    form = None
-    if request.method == "POST":
-        form = ChooseLibraryForm(request.POST)
-        if form.is_valid():
-            lb = Library.objects.get(id=form.cleaned_data["library"])
-            user_member = UserMember(user=request.user, library=lb)
-            user_member.save()
-            return redirect("index")
-    else:
-        form = ChooseLibraryForm()
-    return render(request, "choose_library.html", {"form":form})
 
 
 def index(request):
     if not request.user.is_authenticated():
         return render(request, "unlogged_home.html")
-    user_staff = staff(request)
-    if user_staff:
-        # render a staff homepage instead
-        return render(request, "staff_home.html", {"form": SearchForm(), "user": request.user, "u_staff": user_staff})
-    reg_entries = RegisterEntry.get_all_borrowed_entries()
-    borrowed_entries = [
-        i for i in reg_entries if i.user.username == request.user.username]
-    user_libraries = [
-        i.library for i in UserMember.objects.all() if i.user == request.user]
-    ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries,
-           "user_libraries": user_libraries}
-    return render(request, "homepage.html", ctx)
+    user_members = UserMember.objects.filter(user=request.user).all()
+    user_requests = UserJoinRequest.objects.filter(user=request.user, approved=False).all()
+    print("Pending user requests", user_requests)
+    if user_members.exists():
+        user_staff = staff(request)
+        if user_staff:
+            # render a staff homepage instead
+            return render(request, "staff_home.html", {"form": SearchForm(), "user": request.user, "user_staff": user_staff})
+        reg_entries = RegisterEntry.get_all_borrowed_entries()
+        borrowed_entries = [
+            i for i in reg_entries if i.user and i.user.user.username == request.user.username]
+        user_libraries = [i.library for i in user_members]
+        ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries,
+            "user_libraries": user_libraries}
+        return render(request, "homepage.html", ctx)
+
+    elif list(user_requests) != []:
+        return render(request, "unapproved_home.html", {"user":user_requests[0].user, "library": user_requests[0].library})
+    else:
+        form = None
+        lb = None
+        b = None
+        if request.method == "POST":
+            form = UserConfigForm(request.POST)
+            
+            if form.is_valid():
+                lb = Library.objects.get(id=form.cleaned_data["library"])
+                b = form.cleaned_data["borrower"]
+                if lb and not b:
+                    form = UserConfigForm({"library": [lb.id, lb.name], "borrower": ""}, auto_id=False)
+                    return render(request, "userconfig.html", {"form":form, "show_borrower":True})
+                else:
+                    b = Borrower.objects.filter(name=b)
+                    if list(b) != []:
+                        b = b[0]
+                    else:
+                        b = Borrower(name=b, slug=slugify(b))
+                        b.save()
+                    user_member = UserJoinRequest(user=request.user, library=lb, borrower=b)
+                    user_member.save()
+                    return redirect("index")
+        else:
+            form = UserConfigForm()
+        return render(request, "userconfig.html", {"form":form})
+
 
 # Staff flows
-# TODO: implement a staff decorator thingy
+
+# verify users
+def pending_requests(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden()
+    user_requests = UserJoinRequest.objects.filter(approved=False, library=user_staff.library).all()
+    return render(request, "userrequests.html", {"user_join_requests": user_requests})
+
+# will only be used by javascript
+def api_search(request):
+    b = None
+    origin = request.GET.get("origin", "")
+    if not origin:
+        return HttpResponse(dumps({"msg":"Error, no origin set"}), status=400, content_type="application/json")
+    print("Origin:", origin)
+    if origin == "userconfig":
+        b = request.GET.get("name", "")
+        print("Value:", b)
+        results = Borrower.objects.filter(name__icontains=b).values_list("name")
+        print(results)
+        return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
+    elif origin == "checkout":
+        b = request.GET.get("name", "")
+        print("Value:", b)
+        results = UserMember.objects.filter(user__username__istartswith=b).values_list("user__username")
+        print("Results:", results)
+        return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
+
+    elif origin == "books":
+        b = request.GET.get("name", "")
+        print("Value:", b)
+        results = [{"title":"%s (%s)" % (i.publication.title, i.acc),
+        "description":i.publication.author.name, 
+        "acc": i.acc} for i in Book.objects.filter(publication__title__istartswith=b)]
+        print(results)
+        return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
+    return HttpResponse(dumps({"msg": "Error, invalid origin"}), status=400, content_type="application/json")
+
+# will only be used by javascript
+def approve_requests(request):
+    user_staff = staff(request)
+    if not user_staff:
+        return HttpResponseForbidden
+    print("approve_requests")
+    u = request.POST.get("id", None)
+    try:
+        b = UserJoinRequest.objects.get(id=u)
+    except:
+        print("error 1")
+        return redirect("pendingrequests")    
+    um = UserMember(user=b.user, library=b.library, borrower=b.borrower)
+    try:
+        um.save()
+    except:
+        print("error 2")
+        return redirect("pendingrequests")
+    try:
+        b.approved = True
+        b.save()
+    except:
+        print("error 3")
+        return redirect("pendingrequests")
+    return redirect("pendingrequests")
+    
+
 # new_book
 @login_required
 def new_book(request):
@@ -96,33 +182,51 @@ def new_publication(request):
 
 # checkout
 @login_required
-def checkout(request, slug, acc):
-    print(acc)
+def checkout(request):
     user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden()
     form = None
     if request.method == "POST":
         form = CheckoutForm(request.POST)
+        print("form:", form)
+        print("cleaned data:", form.cleaned_data)
+        print("checking if the form is valid")
+        print("valid:", form.is_valid())
         if form.is_valid():
             # process here
-            re = RegisterEntry(book=Book.objects.get(acc=acc),
-                               date=timezone.now(),
-                               user=User.objects.get(
-                                   username=form.cleaned_data["user"]),
-                               borrower=Borrower.objects.get(
-                                   slug=form.cleaned_data["borrower"]),
-                               library=user_staff.library,
-                               action="borrow")
-            re.save()
-            e = ExtendLog(new_returndate=timezone.now() + timedelta(form.cleaned_data["returndate"]),
-                          returndate=re.most_recent_extendlog.returndate,
-                          entry=re)
-            e.save()
-            return redirect("index")
+            book = Book.objects.filter(acc=form.cleaned_data["acc"])
+            if book.exists():
+                if RegisterEntry.is_borrowed(book[0]):
+                    print("already borrowed book")
+                    return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
+                else:
+                    print("about to create register entry")
+                    # create a new register entry
+                    borrowing_user = User.objects.filter(username=form.cleaned_data["user"])
+                    if not borrowing_user.exists():
+                        print("fortnite is addicting, borrowing user does not exist")
+                        
+                    member_who_borrowed_this_book = UserMember.objects.get(user=borrowing_user, library=user_staff.library)
+                    re = RegisterEntry(book=book[0],
+                                    date=timezone.now(),
+                                    user=member_who_borrowed_this_book,
+                                    borrower=member_who_borrowed_this_book.borrower,
+                                    library=user_staff.library,
+                                    action="borrow")
+                    re.save()
+                    return redirect("index")
+            else: 
+                print("book does not exist")
+                return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
+            # e = ExtendLog(new_returndate=timezone.now() + timedelta(form.cleaned_data["returndate"]),
+            #               returndate=re.most_recent_extendlog.returndate,
+            #               entry=re)
+            # e.save()
+                
     else:
         form = CheckoutForm()
-    return render(request, "checkout.html", {"form": form, "book": Book.objects.get(acc=acc)})
+    return render(request, "checkout.html", {"form": form, "user_staff": user_staff})
 
 # checkin
 @login_required
@@ -154,7 +258,7 @@ def addstaff(request):
             return redirect("index")
     else:
         form = UserStaffForm()
-    return render(request, "addstaff.html", {"form": form})
+    return render(request, "addstaff.html", {"form": form, "user_staff": user_staff})
 
 # view
 @login_required
@@ -162,7 +266,7 @@ def view_books(request):
     user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden()
-    return render(request, "borrowed_books.html", {"entries": RegisterEntry.get_all_borrowed_entries()})
+    return render(request, "borrowed_books.html", {"entries": RegisterEntry.get_all_borrowed_entries(), "user_staff":user_staff})
 
 # User flows
 # search
@@ -218,7 +322,7 @@ def view_one_book(request, slug, acc):
     if not user_staff:
         ctx = {"book": book, "book_image": book_image}
     else:
-        ctx = {"book": book, "user_staff": True, "book_image": book_image}
+        ctx = {"book": book, "user_staff": user_staff, "book_image": book_image}
     return render(request, "book.html", ctx)
 
 def bye_bye(request):

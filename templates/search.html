@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<form action="/books/search/" method="POST">
+<form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
     <div class="ui input">
         {{ form }}
