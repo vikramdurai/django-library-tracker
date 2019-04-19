@@ -198,14 +198,13 @@ def checkout(request):
             book = Book.objects.filter(acc=form.cleaned_data["acc"])
             if book.exists():
                 if RegisterEntry.is_borrowed(book[0]):
-                    print("already borrowed book")
-                    return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
+                    return render(request, "checkout.html", {"form":form, "user_staff": user_staff, "error": "Already borrowed book"})
                 else:
                     print("about to create register entry")
                     # create a new register entry
                     borrowing_user = User.objects.filter(username=form.cleaned_data["user"])
                     if not borrowing_user.exists():
-                        print("fortnite is addicting, borrowing user does not exist")
+                        return render(request, "checkout.html", {"form":form, "user_staff": user_staff, "error": "No member exists with that username"})
                         
                     member_who_borrowed_this_book = UserMember.objects.get(user=borrowing_user, library=user_staff.library)
                     re = RegisterEntry(book=book[0],
@@ -216,8 +215,7 @@ def checkout(request):
                                     action="borrow")
                     re.save()
                     return redirect("index")
-            else: 
-                print("book does not exist")
+            else:
                 return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
             # e = ExtendLog(new_returndate=timezone.now() + timedelta(form.cleaned_data["returndate"]),
             #               returndate=re.most_recent_extendlog.returndate,

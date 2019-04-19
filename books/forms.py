@@ -59,6 +59,7 @@ class NewPubForm(forms.Form):
 
 
 class UserConfigForm(forms.Form):
+    LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
     borrower = forms.CharField(label="", required=False, max_length=255, widget=forms.TextInput(
         attrs={'placeholder': 'Enter your place of residence, e.g "F10, Mosaic, GoodEarth Malhar"', 'class': 'prompt'}))
     library = forms.ChoiceField(label="Library to be a part of", choices=LIBRARY_CHOICES, widget=forms.Select(
