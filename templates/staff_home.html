@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Welcome, {{ user.username }}</h1>
-<a href="{% url 'logout' %}">Log out</a>
 <p>You belong to: <strong>{{ user_staff.library }}</strong></p>
 <form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
