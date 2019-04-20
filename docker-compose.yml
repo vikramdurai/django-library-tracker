@@ -24,9 +24,10 @@ services:
       - db
   nginx:
     restart: always
-    build: ./nginx
+    build: ./data/nginx
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     volumes:
+      - ./data/nginx:/etc/nginx/conf.d
       - static_volume:/code/staticfiles/
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot

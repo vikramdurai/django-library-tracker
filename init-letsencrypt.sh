@@ -1,6 +1,6 @@
 #!/bin/bash
 
-domains=(localhost everylibrary.co www.everylibrary.co)
+domains=(everylibrary.co *.everylibrary.co)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="vikram@everylibrary.co" # Adding a valid address is strongly recommended
