@@ -1,1 +1,4 @@
 library/secrets.py
+data/certbot/conf/*/*.pem
+data/certbot/conf/*.pem
+*.pem
