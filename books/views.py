@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.template.defaultfilters import slugify
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
 
 from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, UserConfigForm
@@ -19,13 +22,17 @@ def staff(request):
         pass
     return False
 
+def send_html_email(to_list, subject, template_name, context, sender=settings.DEFAULT_FROM_EMAIL):
+    msg_html = render_to_string(template_name, context)
+    msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, bcc=to_list)
+    msg.content_subtype = "html"  # Main content is now text/html
+    return msg.send()
 
 def index(request):
     if not request.user.is_authenticated():
         return render(request, "unlogged_home.html")
     user_members = UserMember.objects.filter(user=request.user).all()
     user_requests = UserJoinRequest.objects.filter(user=request.user, approved=False).all()
-    print("Pending user requests", user_requests)
     if user_members.exists():
         user_staff = staff(request)
         if user_staff:
@@ -85,27 +92,20 @@ def api_search(request):
     origin = request.GET.get("origin", "")
     if not origin:
         return HttpResponse(dumps({"msg":"Error, no origin set"}), status=400, content_type="application/json")
-    print("Origin:", origin)
     if origin == "userconfig":
         b = request.GET.get("name", "")
-        print("Value:", b)
         results = Borrower.objects.filter(name__icontains=b).values_list("name")
-        print(results)
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
     elif origin == "checkout":
         b = request.GET.get("name", "")
-        print("Value:", b)
         results = UserMember.objects.filter(user__username__istartswith=b).values_list("user__username")
-        print("Results:", results)
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
 
     elif origin == "books":
         b = request.GET.get("name", "")
-        print("Value:", b)
         results = [{"title":"%s (%s)" % (i.publication.title, i.acc),
         "description":i.publication.author.name, 
         "acc": i.acc} for i in Book.objects.filter(publication__title__istartswith=b)]
-        print(results)
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
     return HttpResponse(dumps({"msg": "Error, invalid origin"}), status=400, content_type="application/json")
 
@@ -114,24 +114,20 @@ def approve_requests(request):
     user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden
-    print("approve_requests")
     u = request.POST.get("id", None)
     try:
         b = UserJoinRequest.objects.get(id=u)
     except:
-        print("error 1")
         return redirect("pendingrequests")    
     um = UserMember(user=b.user, library=b.library, borrower=b.borrower)
     try:
         um.save()
     except:
-        print("error 2")
         return redirect("pendingrequests")
     try:
         b.approved = True
         b.save()
     except:
-        print("error 3")
         return redirect("pendingrequests")
     return redirect("pendingrequests")
     
@@ -189,10 +185,6 @@ def checkout(request):
     form = None
     if request.method == "POST":
         form = CheckoutForm(request.POST)
-        print("form:", form)
-        print("cleaned data:", form.cleaned_data)
-        print("checking if the form is valid")
-        print("valid:", form.is_valid())
         if form.is_valid():
             # process here
             book = Book.objects.filter(acc=form.cleaned_data["acc"])
@@ -200,13 +192,12 @@ def checkout(request):
                 if RegisterEntry.is_borrowed(book[0]):
                     return render(request, "checkout.html", {"form":form, "user_staff": user_staff, "error": "Already borrowed book"})
                 else:
-                    print("about to create register entry")
                     # create a new register entry
                     borrowing_user = User.objects.filter(username=form.cleaned_data["user"])
                     if not borrowing_user.exists():
                         return render(request, "checkout.html", {"form":form, "user_staff": user_staff, "error": "No member exists with that username"})
                         
-                    member_who_borrowed_this_book = UserMember.objects.get(user=borrowing_user, library=user_staff.library)
+                    member_who_borrowed_this_book = UserMember.objects.get(user=borrowing_user[0], library=user_staff.library)
                     re = RegisterEntry(book=book[0],
                                     date=timezone.now(),
                                     user=member_who_borrowed_this_book,
@@ -214,6 +205,15 @@ def checkout(request):
                                     library=user_staff.library,
                                     action="borrow")
                     re.save()
+                    print("i am worthy of the title")
+                    def lol(to_list, subject, template_name, context, sender=settings.DEFAULT_FROM_EMAIL):
+                        msg_html = render_to_string(template_name, context)
+                        msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, bcc=to_list)
+                        msg.content_subtype = "html"  # Main content is now text/html
+                        return msg.send()
+                    print("User email:", borrowing_user[0].email)
+                    print("Username:", borrowing_user[0].username)
+                    lol(to_list=[borrowing_user[0].email],subject="You've borrowed a book - Everylibrary.co",template_name="email.html",sender=settings.EMAIL_HOST_USER,context={"user": borrowing_user, "entry": re, "b": book[0], "library": user_staff.library})
                     return redirect("index")
             else:
                 return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
@@ -233,8 +233,6 @@ def checkin(request, slug, acc):
     if not user_staff:
         return HttpResponseForbidden()
     b = Book.objects.get(acc=acc)
-    print(RegisterEntry.objects.get(book=b))
-    print(RegisterEntry.objects.filter(library=user_staff.library))
     bre = RegisterEntry.objects.get(book=b, library=user_staff.library)
     re = RegisterEntry(book=b, date=timezone.now(),
                        user=bre.user, borrower=bre.borrower, action="return")

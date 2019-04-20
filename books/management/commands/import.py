@@ -64,7 +64,7 @@ def i_books(csv_filename):
                                 available_goodreads=goodreads_converter(
                                     i[8]))
                 p.save()
-                b = Book(publication=p, acc=i[7])
+                b = Book(publication=p, acc=i[7], date_added=parse_datetime(i[9]))
                 b.save()
             b.save()
 
