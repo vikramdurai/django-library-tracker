@@ -117,10 +117,10 @@
                                     <tr>
                                         <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                                             <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Dear
-                                                {{ user.first_name }},</p>
+                                                {{ user.username }},</p>
                                             <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">
-                                                This email is to confirm that you have borrowed a book ('{{
-                                                b.publication.title }}') from {{ library.name }}.</p>
+                                                This email is to confirm that you have borrowed a book
+                                                ('{{ book.publication.title }}') from {{ library.name }}.</p>
                                             <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">
                                                 Unless you extend the return date, please remember to return the book
                                                 on <strong>{{ entry.most_recent_extendlog.returndate }}</strong></p>

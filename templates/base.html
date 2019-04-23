@@ -4,45 +4,116 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/2.0.5/velocity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/2.0.5/velocity.ui.min.js"></script>
 </head>
 
 <body>
     <div class="ui container main">
         <div class="ui stackable grid">
             <div class="ui four wide column">
-                <div class="ui vertical menu">
-                    <a href="{% url 'index' %}" class="active teal item">
-                        Dashboard
-                    </a>
-                    <a href="{% url 'search' %}" class="item">
-                        Search
-                    </a>
-                    {% if user_staff %}
-                    <a href="{% url 'borrowed_books' %}" class="item">
-                        Borrowed books
-                    </a>
-                    <a href="{% url 'checkout' %}" class="item">
-                        Borrow a book
-                    </a>
-                    <a href="{% url 'newbook' %}" class="item">
-                        New book
-                    </a>
-                    <a href="{% url 'newpublication' %}" class="item">
-                        New book title
-                    </a>
-                    <a href="{% url 'addstaff' %}" class="item">
-                        Add a staff account
-                    </a>
-                    <a href="{% url 'pendingrequests' %}" class="item">
-                        Pending user join requests
-                    </a>
-                    {% endif %}
-                    {% if request.user.is_authenticated %}
-                    <a href="{% url 'logout' %}" class="item">
-                        Logout
-                    </a>
-                    {% endif %}
+                <div class="show-on-mobile" style="width:100%;">
+                    <nav id="navSidebar">
+                        <div class="ui vertical fluid text menu" style="margin:0;">
+                            <a href="{% url 'index' %}" class="active teal item">
+                                Dashboard
+                            </a>
+                            <a href="{% url 'search' %}" class="item">
+                                Search
+                            </a>
+                            {% if user_staff %}
+                            <a href="{% url 'borrowed_books' %}" class="item">
+                                Borrowed books
+                            </a>
+                            <a href="{% url 'checkout' %}" class="item">
+                                Borrow a book
+                            </a>
+                            <a href="{% url 'newbook' %}" class="item">
+                                New book
+                            </a>
+                            <a href="{% url 'newpublication' %}" class="item">
+                                New book title
+                            </a>
+                            <a href="{% url 'addstaff' %}" class="item">
+                                Add a staff account
+                            </a>
+                            <a href="{% url 'pendingrequests' %}" class="item">
+                                Pending user join requests
+                            </a>
+                            {% endif %}
+                            {% if request.user.is_authenticated %}
+                            <a href="{% url 'logout' %}" class="item">
+                                Logout
+                            </a>
+                            {% endif %}
+                        </div>
+
+
+                    </nav>
                 </div>
+                <div id="navFade"></div>
+                <script>
+                    $(document).ready(function () {
+
+                        // set vars for this function
+                        let sidebar = $("#navSidebar");
+                        let sidebarList1 = $("#navSidebar ui.menu li");
+                        // let sidebarList2 = $("#navSidebar li");
+                        let body = $("body");
+                        let main = $(".show-on-mobile");
+                        let dark = $("#navFade");
+                        let bounceIn = "transition.bounceIn";
+                        let bounceDownIn = "transition.bounceDownIn";
+                        let slideLeftIn = "transition.slideLeftIn";
+                        let slideRightIn = "transition.slideRightIn";
+                        let slideUpIn = "transition.slideUpIn";
+                        let slideDownIn = "transition.slideDownIn";
+                        let fadeIn = "transition.fadeIn";
+                        let fadeOut = "transition.fadeOut";
+
+                        // animate sidebar slidein on click
+                        $("#hamburger-link").on("click", function () {
+                            sidebar.velocity({
+                                translateX: "256px"
+                            }, 600, [30, 15])
+                            // SPRING PHYSICS
+                            // Pass a two-item array in the form of [ tension, friction ].
+                            // A higher tension (default: 500) increases total speed and bounciness.
+                            // A lower friction (default: 20) increases ending vibration speed.
+
+                            // animate nav entry
+                            sidebarList1.velocity(slideLeftIn, {
+                                stagger: 0,
+                                drag: true,
+                                display: "flex"
+                            })
+                            // sidebarList2.velocity( slideLeftIn, {
+                            //   stagger: 0,
+                            //   drag: true })
+                            // $("#breadcrumbs").velocity( slideLeftIn, {
+                            //   stagger: 0,
+                            //   drag: true })
+                            // $("#navHeader .row").velocity( slideDownIn, {
+                            //   display: "flex" });
+
+                            // fade and blur background
+                            dark.velocity(fadeIn, 300);
+
+                            body.addClass("noscroll");
+                        }); // end open sidebar
+
+                        // sidebar close on content click
+                        $("#navFade").on("click", function () {
+                            sidebar.velocity("reverse")
+                            dark.velocity(fadeOut, 300)
+                            main.velocity("reverse");
+                            body.removeClass("noscroll");
+                        }); // end close sidebar
+
+                    });
+
+                </script>
+
             </div>
             <div class="ui twelve wide column">
 

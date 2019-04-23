@@ -24,7 +24,7 @@ def staff(request):
 
 def send_html_email(to_list, subject, template_name, context, sender=settings.DEFAULT_FROM_EMAIL):
     msg_html = render_to_string(template_name, context)
-    msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, bcc=to_list)
+    msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, to=to_list)
     msg.content_subtype = "html"  # Main content is now text/html
     return msg.send()
 
@@ -206,14 +206,14 @@ def checkout(request):
                                     action="borrow")
                     re.save()
                     print("i am worthy of the title")
-                    def lol(to_list, subject, template_name, context, sender=settings.DEFAULT_FROM_EMAIL):
-                        msg_html = render_to_string(template_name, context)
-                        msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, bcc=to_list)
-                        msg.content_subtype = "html"  # Main content is now text/html
-                        return msg.send()
+                    # def lol(to_list, subject, template_name, context, sender=settings.DEFAULT_FROM_EMAIL):
+                    #     msg_html = render_to_string(template_name, context)
+                    #     msg = EmailMessage(subject=subject, body=msg_html, from_email=sender, bcc=to_list)
+                    #     msg.content_subtype = "html"  # Main content is now text/html
+                    #     return msg.send()
                     print("User email:", borrowing_user[0].email)
                     print("Username:", borrowing_user[0].username)
-                    lol(to_list=[borrowing_user[0].email],subject="You've borrowed a book - Everylibrary.co",template_name="email.html",sender=settings.EMAIL_HOST_USER,context={"user": borrowing_user, "entry": re, "b": book[0], "library": user_staff.library})
+                    send_html_email(to_list=[borrowing_user[0].email],subject="You've borrowed a book - Everylibrary.co",template_name="email.html",sender=settings.EMAIL_HOST_USER,context={"user": borrowing_user, "entry": re, "book": book[0], "library": user_staff.library})
                     return redirect("index")
             else:
                 return render(request, "checkout.html", {"form":form, "user_staff": user_staff})
