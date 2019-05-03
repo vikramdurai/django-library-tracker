@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "django.contrib.postgres",
-    # 'social_django',
+    'social_django',
     # "books.apps.BooksConfig"
 ]
 
