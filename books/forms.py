@@ -3,9 +3,6 @@ from django.contrib.auth.models import User
 from .models import Author, Book, Publication, Borrower, Library, UserStaff
 from django.core.validators import MaxValueValidator
 
-print(Library.objects.all())
-LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
-
 
 class SearchForm(forms.Form):
     search_text = forms.CharField(label="", max_length=200, widget=forms.TextInput(
@@ -41,10 +38,9 @@ class NewBookForm(forms.Form):
 
 
 class NewPubForm(forms.Form):
-    AUTHOR_CHOICES = [[i.id, i.name] for i in Author.objects.all()]
-    author = forms.ChoiceField(label="Author", choices=AUTHOR_CHOICES, widget=forms.Select(
-        attrs={"class": "ui search selection dropdown", "id": "b-author"}, choices=AUTHOR_CHOICES))
-    avgood = forms.BooleanField(label="Available on Goodreads.com", widget=forms.CheckboxInput(
+    author = forms.CharField(label="Author", max_length=255, widget=forms.TextInput(
+        attrs={"class": "prompt", "placeholder": "Search for authors", "id": "b-author"}))
+    avgood = forms.BooleanField(label="Available on Goodreads.com", required=False, widget=forms.CheckboxInput(
         attrs={"class": "ui checkbox"}))
     title = forms.CharField(label="Title", max_length=255, widget=forms.TextInput(
         attrs={"id": "b-title"}

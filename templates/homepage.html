@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Welcome, {{ request.user.username }}</h1>
 <form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
     <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>

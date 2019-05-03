@@ -107,6 +107,11 @@ def api_search(request):
         "description":i.publication.author.name, 
         "acc": i.acc} for i in Book.objects.filter(publication__title__istartswith=b)]
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
+
+    elif origin == "authors":
+        b = request.GET.get("name", "")
+        results = Author.objects.filter(name__icontains=b).values_list("name")
+        return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
     return HttpResponse(dumps({"msg": "Error, invalid origin"}), status=400, content_type="application/json")
 
 # will only be used by javascript
@@ -164,7 +169,7 @@ def new_publication(request):
             p = Publication(
                 sno=form.cleaned_data["sno"],
                 title=form.cleaned_data["title"],
-                author=Author.objects.get(id=form.cleaned_data["author"]),
+                author=Author.objects.get(name=form.cleaned_data["author"]),
                 code=form.cleaned_data["code"],
                 available_goodreads=form.cleaned_data["avgood"],
                 genre=form.cleaned_data["genre"],
