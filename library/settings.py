@@ -35,9 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "django.contrib.postgres",
-    'social_django',
-    "polls.apps.PollsConfig",
-    "books.apps.BooksConfig"
+    # 'social_django',
+    # "books.apps.BooksConfig"
 ]
 
 MIDDLEWARE = [
@@ -51,7 +50,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware'
 ]
 
-ROOT_URLCONF = 'library.urls'
+# ROOT_URLCONF = 'library.urls'
 
 TEMPLATES = [
     {
