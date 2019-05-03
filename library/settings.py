@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django.contrib.postgres",
     'social_django',
-    # "books.apps.BooksConfig"
+    "books.apps.BooksConfig"
 ]
 
 MIDDLEWARE = [
@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware'
 ]
 
-# ROOT_URLCONF = 'library.urls'
+ROOT_URLCONF = 'library.urls'
 
 TEMPLATES = [
     {

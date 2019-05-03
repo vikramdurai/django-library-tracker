@@ -24,14 +24,15 @@ class ExtendForm(forms.Form):
 
 
 class UserStaffForm(forms.Form):
-    USER_CHOICES = [[i.username, i.username]
-                    for i in User.objects.all() if not UserStaff.objects.filter(user=i) and not (i.username == "admin")]
+    USER_CHOICES = []
+    # [[i.username, i.username] for i in User.objects.all() if not UserStaff.objects.filter(user=i) and not (i.username == "admin")]
     username = forms.ChoiceField(label="Which user to add", choices=USER_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown"}, choices=USER_CHOICES))
 
 
 class NewBookForm(forms.Form):
-    PUBLICATION_CHOICES = [[i.id, i.title] for i in Publication.objects.all()]
+    PUBLICATION_CHOICES = []
+    # [[i.id, i.title] for i in Publication.objects.all()]
     publication = forms.ChoiceField(label="Publication/title", choices=PUBLICATION_CHOICES, widget=forms.Select(
         attrs={"class": "ui search selection dropdown"}, choices=PUBLICATION_CHOICES))
     acc = forms.CharField(label="Accession number", max_length=255)
@@ -55,7 +56,8 @@ class NewPubForm(forms.Form):
 
 
 class UserConfigForm(forms.Form):
-    LIBRARY_CHOICES = [[i.id, i.name] for i in Library.objects.all()]
+    LIBRARY_CHOICES = []
+    # [[i.id, i.name] for i in Library.objects.all()]
     borrower = forms.CharField(label="", required=False, max_length=255, widget=forms.TextInput(
         attrs={'placeholder': 'Enter your place of residence, e.g "F10, Mosaic, GoodEarth Malhar"', 'class': 'prompt'}))
     library = forms.ChoiceField(label="Library to be a part of", choices=LIBRARY_CHOICES, widget=forms.Select(
