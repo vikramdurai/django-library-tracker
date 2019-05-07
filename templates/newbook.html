@@ -2,7 +2,34 @@
 {% block content %}
 <form action="{% url 'newbook' %}" method="POST" class="ui form">
     {% csrf_token %}
-    {{ form }}
-    <button type="submit" class="button ui">Add title</button>
+    <div class="ui search" id="titlesearch">
+        Book's title: {{ form.publication }}
+        <div class="results"></div>
+    </div>
+    Accession number: {{ form.acc }}
+    <button type="submit" class="button ui">Add book</button>
 </form>
+<script>
+    $('.ui.search#titlesearch')
+        .search({
+            // change search endpoint to a custom endpoint by manipulating apiSettings
+            apiSettings: {
+                url: '/apisearch/?name={query}&&origin=titles',
+                onResponse: function (response) {
+                    console.log(response);
+                    var res = {
+                        results: []
+                    }
+                    response.results.forEach(function (result) {
+                        res.results.push({ 'title': result.title, 'description': result.description });
+                    })
+                    return res
+                }
+            },
+            onSelect: function (result, response) {
+                $('input[name="publication"]').val(result.title);
+            },
+        })
+        ;
+</script>
 {% endblock %}

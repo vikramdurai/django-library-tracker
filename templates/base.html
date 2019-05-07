@@ -27,7 +27,7 @@
 <body>
     <div class="ui container main">
         <div class="ui stackable grid">
-            <div class="ui sixteen wide column">
+            <div class="ui sixteen wide column" class="sad">
                 <div class="ui text fluid menu" style="margin:0em;padding-top:0.5em;padding-bottom:0.5em;border-bottom:1px solid #e9e9e9;">
                     <a style="margin-left:1em;" id="hamburger-link" class="item"><i class="bars icon" style="color:#000;"></i></a>
 
@@ -39,10 +39,10 @@
                 </div>
 
             </div>
-            <div class="ui four wide column">
+            <div class="ui four wide column" id="sidebarui">
                 <div class="show-on-mobile" style="width:100%;">
                     <nav id="navSidebar">
-                        <div class="ui vertical fluid text menu" style="margin:0;">
+                        <div class="ui vertical fluid text menu" style="margin:0;margin-left:5%;">
                             <a href="{% url 'index' %}" class="active teal item">
                                 Dashboard
                             </a>
@@ -81,70 +81,8 @@
                     </nav>
                 </div>
                 <div id="navFade"></div>
-                <script>
-                    $(document).ready(function () {
-
-                        // set vars for this function
-                        let sidebar = $("#navSidebar");
-                        let sidebarList1 = $("#navSidebar ui.menu li");
-                        // let sidebarList2 = $("#navSidebar li");
-                        let body = $("body");
-                        let main = $(".show-on-mobile");
-                        let dark = $("#navFade");
-                        let bounceIn = "transition.bounceIn";
-                        let bounceDownIn = "transition.bounceDownIn";
-                        let slideLeftIn = "transition.slideLeftIn";
-                        let slideRightIn = "transition.slideRightIn";
-                        let slideUpIn = "transition.slideUpIn";
-                        let slideDownIn = "transition.slideDownIn";
-                        let fadeIn = "fadeIn";
-                        let fadeOut = "transition.fadeOut";
-
-                        // animate sidebar slidein on click
-                        $("#hamburger-link").on("click", function () {
-                            sidebar.velocity({
-                                translateX: "256px"
-                            }, 600, [30, 15])
-                            // SPRING PHYSICS
-                            // Pass a two-item array in the form of [ tension, friction ].
-                            // A higher tension (default: 500) increases total speed and bounciness.
-                            // A lower friction (default: 20) increases ending vibration speed.
-
-                            // animate nav entry
-                            sidebarList1.velocity(slideLeftIn, {
-                                stagger: 0,
-                                drag: true,
-                                display: "flex"
-                            })
-                            // sidebarList2.velocity( slideLeftIn, {
-                            //   stagger: 0,
-                            //   drag: true })
-                            // $("#breadcrumbs").velocity( slideLeftIn, {
-                            //   stagger: 0,
-                            //   drag: true })
-                            // $("#navHeader .row").velocity( slideDownIn, {
-                            //   display: "flex" });
-
-                            // fade and blur background
-                            dark.velocity(fadeIn, 300);
-
-                            body.addClass("noscroll");
-                        }); // end open sidebar
-
-                        // sidebar close on content click
-                        $("#navFade").on("click", function () {
-                            sidebar.velocity("reverse")
-                            dark.velocity(fadeOut, 300)
-                            main.velocity("reverse");
-                            body.removeClass("noscroll");
-                        }); // end close sidebar
-
-                    });
-
-                </script>
-
             </div>
-            <div class="ui twelve wide column">
+            <div class="ui twelve wide column" id="content">
 
                 {% block content %}
                 {% endblock %}
@@ -157,5 +95,67 @@
         margin-top: 2em;
     }
 </style>
+
+<script>
+    $(document).ready(function () {
+
+        // set vars for this function
+        let sidebar = $("#navSidebar");
+        let sidebarList1 = $("#navSidebar ui.menu li");
+        // let sidebarList2 = $("#navSidebar li");
+        let body = $("body");
+        let main = $(".show-on-mobile");
+        let dark = $("#navFade");
+        let bounceIn = "transition.bounceIn";
+        let bounceDownIn = "transition.bounceDownIn";
+        let slideLeftIn = "transition.slideLeftIn";
+        let slideRightIn = "transition.slideRightIn";
+        let slideUpIn = "transition.slideUpIn";
+        let slideDownIn = "transition.slideDownIn";
+        let fadeIn = "fadeIn";
+        let fadeOut = "transition.fadeOut";
+
+        // animate sidebar slidein on click
+        $("#hamburger-link").on("click", function () {
+            sidebar.velocity({
+                translateX: "256px"
+            }, 600, [30, 15])
+            // SPRING PHYSICS
+            // Pass a two-item array in the form of [ tension, friction ].
+            // A higher tension (default: 500) increases total speed and bounciness.
+            // A lower friction (default: 20) increases ending vibration speed.
+
+            // animate nav entry
+            sidebarList1.velocity(slideLeftIn, {
+                stagger: 0,
+                drag: true,
+                display: "flex"
+            })
+            // sidebarList2.velocity( slideLeftIn, {
+            //   stagger: 0,
+            //   drag: true })
+            // $("#breadcrumbs").velocity( slideLeftIn, {
+            //   stagger: 0,
+            //   drag: true })
+            // $("#navHeader .row").velocity( slideDownIn, {
+            //   display: "flex" });
+
+            // fade and blur background
+            dark.velocity(fadeIn, 300);
+
+            body.addClass("noscroll");
+        }); // end open sidebar
+
+        // sidebar close on content click
+        $("#content").on("click", function () {
+            sidebar.velocity("reverse")
+            dark.velocity(fadeOut, 300)
+            main.velocity("reverse");
+            body.removeClass("noscroll");
+        }); // end close sidebar
+
+    });
+
+</script>
 
 </html>

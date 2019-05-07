@@ -31,26 +31,27 @@ class UserStaffForm(forms.Form):
 
 
 class NewBookForm(forms.Form):
-    PUBLICATION_CHOICES = [[i.id, i.title] for i in Publication.objects.all()]
-    publication = forms.ChoiceField(label="Publication/title", choices=PUBLICATION_CHOICES, widget=forms.Select(
-        attrs={"class": "ui search selection dropdown"}, choices=PUBLICATION_CHOICES))
+    publication = forms.CharField(label="", max_length=255, widget=forms.TextInput(
+        attrs={"class": "prompt", "placeholder": "Search for titles"}))
     acc = forms.CharField(label="Accession number", max_length=255)
 
 
 class NewPubForm(forms.Form):
-    author = forms.CharField(label="Author", max_length=255, widget=forms.TextInput(
+    author = forms.CharField(label="", max_length=255, widget=forms.TextInput(
         attrs={"class": "prompt", "placeholder": "Search for authors", "id": "b-author"}))
     avgood = forms.BooleanField(label="Available on Goodreads.com", required=False, widget=forms.CheckboxInput(
         attrs={"class": "ui checkbox"}))
     title = forms.CharField(label="Title", max_length=255, widget=forms.TextInput(
-        attrs={"id": "b-title"}
+        attrs={"id": "b-title", "placeholder": "Enter the title of the book"}
     ))
     sno = forms.IntegerField(label="Special Number", widget=forms.TextInput(
-        attrs={"id": "b-sno"}
+        attrs={"id": "b-sno", "placeholder": "Enter the special number of the book"}
     ))
-    code = forms.CharField(label="Book code", max_length=255)
+    code = forms.CharField(label="Book code", max_length=255, widget=forms.TextInput(
+        attrs={"placeholder": "Enter the book's code"}
+    ))
     genre = forms.CharField(label="Genre", max_length=255, widget=forms.TextInput(
-        attrs={"id": "b-genre"}
+        attrs={"id": "b-genre", "placeholder": "Enter a genre"}
     ))
 
 

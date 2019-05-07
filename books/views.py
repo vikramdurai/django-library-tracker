@@ -112,6 +112,12 @@ def api_search(request):
         b = request.GET.get("name", "")
         results = Author.objects.filter(name__icontains=b).values_list("name")
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
+
+    elif origin == "titles":
+        b = request.GET.get("name", "")
+        results = [{"title":"%s" % i.title,
+        "description":i.author.name} for i in Publication.objects.filter(title__istartswith=b)]
+        return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
     return HttpResponse(dumps({"msg": "Error, invalid origin"}), status=400, content_type="application/json")
 
 # will only be used by javascript
@@ -147,7 +153,7 @@ def new_book(request):
     if request.method == "POST":
         form = NewBookForm(request.POST)
         if form.is_valid():
-            b = Book(publication=Publication.objects.get(id=form.cleaned_data["publication"]),
+            b = Book(publication=Publication.objects.get(title=form.cleaned_data["publication"]),
                      date_added=timezone.now(), acc=form.cleaned_data["acc"], library=user_staff.library)
             b.save()
             return redirect("titles", slug=b.publication.slug, acc=b.acc)

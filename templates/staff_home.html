@@ -5,20 +5,22 @@
     <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>
 </form>
 <p>You belong to: <strong>{{ user_staff.library }}</strong></p>
-<a href="{% url 'borrowed_books' %}">
-    <div class="ui card">
-        <div class="content">
+
+<div class="ui card">
+    <div class="content">
+        <a href="{% url 'borrowed_books' %}">
             <i class="ui icon book"></i>
             View all borrowed books
-            <br>
-        </div>
+        </a>
+        <br>
     </div>
-</a>
-<a href="{% url 'addstaff' %}">
-    <div class="ui card">
-        <div class="content">
+</div>
+
+<div class="ui card">
+    <div class="content">
+        <a href="{% url 'addstaff' %}">
             Add a new staff account
-        </div>
+        </a>
     </div>
-</a>
+</div>
 {% endblock %}
