@@ -93,7 +93,7 @@ DATABASES = {
 }
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = "bye_bye"
+LOGOUT_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = '/'
 
 
@@ -140,3 +140,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
+
+SECURE_SSL_REDIRECT = True
