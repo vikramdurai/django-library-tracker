@@ -4,6 +4,51 @@ from books.models import *
 import csv
 
 
+def makeborrowers():
+    # This code generates all addresses in GoodEarth Malhar
+    # Addresses are structured like so:
+    # F10, Mosaic, GoodEarth Malhar
+    # ^    ^ project/cluster ^ development community
+    # house number + block
+    # TODO: implement this in library code itself
+    blocks = ["A","B","C","D","E","F"]
+    cluster = ["Mosaic", "Footprints", "Patterns", "Resonance", "Terraces"]
+    house_no = range(1, 12)
+    for c in cluster:
+        for b in blocks:
+            for h in house_no:
+                name = b+str(h)+", "+c
+                if Borrower.objects.filter(name=name).exists():
+                    continue
+                a = Borrower(name=name, slug="")
+                a.save()
+
+# parse addresses in register
+def parseaddrs(x):
+    # Good Earth Malhar's address data is in the format
+    # of MO-F10 whereas we want it as F10, Mosaic
+    cluster_map = {
+        "MO":"Mosaic",
+        "RE":"Resonance",
+        "FP":"Footprints",
+        "PA":"Patterns",
+        "TE":"Terraces",
+        "OR": "Unknown"
+    }
+    cluster = cluster_map[x[0:2]]
+    block = x[3]
+    # sometimes Terraces has 3-digit house numbers
+    house_no = int(x[4:])
+    name = block+str(house_no)+", "+cluster
+    a = Borrower.objects.filter(name=name)
+    if a.exists():
+        return a.first()
+    a = Borrower(name=name, slug="")
+    a.save()
+    return a
+
+
+
 def i_books(csv_filename):
     with open(csv_filename, newline="") as csv_file:
         x = csv.reader(csv_file, delimiter=",")
@@ -88,17 +133,13 @@ def i_register(csv_filename):
         # Bear in mind that this code was written to work
         # with Malhar Library's spreadsheets.
         for i in x:
-                    # Check if the borrower is already in the
-                    # database. If not, create an entry for them.
-            borrower = None
-            if not list(Borrower.objects.filter(name=i[3])):
-                borrower = Borrower(name=i[3])
-                borrower.save()
-            borrower = Borrower.objects.get(name=i[3])
+                # Check if the borrower is already in the
+                # database. If not, create an entry for them.
+            borrower_abbreviated = i[3]
+            borrower = parseaddrs(borrower_abbreviated)
             book = Book.objects.filter(acc=i[2])
-            if list(book) == []:
+            if not book.exists():
                 # this book don't even exist
-                book = None
                 continue
             else:
                 book = book.all()[0]
@@ -130,6 +171,8 @@ class Command(BaseCommand):
             for i in csv_files:
                 i_books(i)
             print("Loaded books")
+            makeborrowers()
+            print("Loaded borrowers")
             i_register(register)
             print("Loaded register")
 
@@ -141,3 +184,7 @@ class Command(BaseCommand):
         elif options["input"] == "register":
             i_register(csv_filename)
             print("Loaded register")
+        
+        elif options["input"] == "borrowers":
+            makeborrowers()
+            print("Loaded borrowers")
