@@ -7,8 +7,9 @@
     </div><button class="ui button" type="submit">Submit</button>
 </form>
 <div id="results">
-    {% if results %}
     <h2>Search results for {{ search_text }}</h2>
+    <h3>BOOKS</h3>
+    {% if book_results %}
     <table class="ui celled table">
         <thead>
             <tr>
@@ -19,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for i in results %}
+            {% for i in book_results %}
             <tr>
                 <td><a href="{% url 'titles' i.publication.slug i.acc %}">{{ i.publication.title }}</a></td>
                 <td>{{ i.publication.author.name }}</td>
@@ -29,9 +30,42 @@
             {% endfor %}
         </tbody>
     </table>
-    <ul>
-        {% else %}
-        <h2>Your search ('{{ search_text }}') did not match any books in the library database.</h2>
-        {% endif %}
+    {% else %}
+    <h2>Your search ('{{ search_text }}') did not match any books in the library database.</h2>
+    {% endif %}
+    <h3>AUTHORS</h3>
+    {% if author_results %}
+    {% load book_extras %}
+    {% for a in author_results %}
+    Books written by {{ a.name }}:
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Genre</th>
+                <th>ACC #</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% books_by_author a as books%}
+            <script>
+                {% for i in books %}
+                console.log("Book written by {{ a.name }}: {{ i }}")
+                {% endfor %}
+            </script>
+            {% for i in books %}
+            <tr>
+                <td><a href="{% url 'titles' i.publication.slug i.acc %}">{{ i.publication.title }}</a></td>
+                <td>{{ i.publication.genre }}</td>
+                <td>{{ i.acc }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    {% else %}
+    <h2>Your search ('{{ search_text }}') did not match any authors in the library database.</h2>
+    {% endif %}
+
 </div>
 {% endblock %}
