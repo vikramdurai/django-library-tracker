@@ -286,11 +286,15 @@ def search(request):
             # process here
             books = Book.objects.filter(
                 publication__title__search=form.cleaned_data["search_text"])
+            authors = Author.objects.filter(name__search=form.cleaned_data["search_text"])
+            
 
             ctx = {
                 "form": form,
-                "results": books,
-                "search_text": form.cleaned_data["search_text"]
+                "book_results": books,
+                "author_results": authors,
+                "search_text": form.cleaned_data["search_text"],
+                # "books_by_author": books_by_author
             }
             return render(request, "search.html", ctx)
     else:
