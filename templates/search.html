@@ -8,7 +8,7 @@
 </form>
 <div id="results">
     <h2>Search results for {{ search_text }}</h2>
-    <h3>BOOKS</h3>
+    <h3>Books</h3>
     {% if book_results %}
     <table class="ui celled table">
         <thead>
@@ -31,12 +31,14 @@
         </tbody>
     </table>
     {% else %}
-    <h2>Your search ('{{ search_text }}') did not match any books in the library database.</h2>
+    <h4>Your search ('{{ search_text }}') did not match any books in the library database.</h4>
     {% endif %}
-    <h3>AUTHORS</h3>
+    <h3>Authors</h3>
     {% if author_results %}
-    {% load book_extras %}
     {% for a in author_results %}
+    <script>
+        console.log("Author: {{a.name}} Books: {{ a.books.first }}")
+    </script>
     Books written by {{ a.name }}:
     <table class="ui celled table">
         <thead>
@@ -47,24 +49,22 @@
             </tr>
         </thead>
         <tbody>
-            {% books_by_author a as books%}
-            <script>
-                {% for i in books %}
-                console.log("Book written by {{ a.name }}: {{ i }}")
-                {% endfor %}
-            </script>
-            {% for i in books %}
+            {% for key, val in books_from_authors.items %}
+            {% if a.name == key %}
+            {% for i in val %}
             <tr>
                 <td><a href="{% url 'titles' i.publication.slug i.acc %}">{{ i.publication.title }}</a></td>
                 <td>{{ i.publication.genre }}</td>
                 <td>{{ i.acc }}</td>
             </tr>
             {% endfor %}
+            {% endif %}
+            {% endfor %}
         </tbody>
     </table>
     {% endfor %}
     {% else %}
-    <h2>Your search ('{{ search_text }}') did not match any authors in the library database.</h2>
+    <h4>Your search ('{{ search_text }}') did not match any authors in the library database.</h4>
     {% endif %}
 
 </div>
