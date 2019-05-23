@@ -287,6 +287,7 @@ def search(request):
             books = Book.objects.filter(
                 publication__title__search=form.cleaned_data["search_text"])
             authors = Author.objects.filter(name__search=form.cleaned_data["search_text"])
+<<<<<<< HEAD
             books_from_authors = dict()
             def books_by_author_f(a):
                 publications = a.books.all()
@@ -296,12 +297,20 @@ def search(request):
                 return books
             for i in authors:
                 books_from_authors[i.name] = books_by_author_f(i)
+=======
+            
+
+>>>>>>> 8ff3536185f64245a4e0752f97a39bc411b36ff9
             ctx = {
                 "form": form,
                 "book_results": books,
                 "author_results": authors,
                 "search_text": form.cleaned_data["search_text"],
+<<<<<<< HEAD
                 "books_from_authors": books_from_authors
+=======
+                # "books_by_author": books_by_author
+>>>>>>> 8ff3536185f64245a4e0752f97a39bc411b36ff9
             }
             return render(request, "search.html", ctx)
     else:
