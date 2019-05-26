@@ -6,7 +6,9 @@
     }
 
 </style>
+{% if error %}
 <div class="ui message error"><i class="exclamation icon"></i>{{ error }}</div>
+{% endif %}
 <form action="{% url 'checkout' %}" class="ui form" method="POST">
     {% csrf_token %}
     {{form.acc}}
