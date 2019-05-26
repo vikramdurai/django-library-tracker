@@ -11,9 +11,9 @@ class SearchForm(forms.Form):
 
 class CheckoutForm(forms.Form):
     book = forms.CharField(label="Book to borrow", max_length=255,
-                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "Book to borrow"}))
+                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "Look up the book"}))
     user = forms.CharField(label="User", max_length=255,
-                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "User to borrow from"}))
+                           widget=forms.TextInput(attrs={"class": "prompt", "placeholder": "Borrower"}))
     acc = forms.CharField(label="", max_length=255, widget=forms.HiddenInput())
 
 

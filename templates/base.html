@@ -7,6 +7,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.ui.min.js"></script>
     <style>
+        body {
+            background: #f0f0f0;
+        }
+
         #navSidebar {
             background: #fff;
             width: 256px;
@@ -25,21 +29,19 @@
 </head>
 
 <body>
-    <div class="ui container main">
+    <div class="ui main" style="margin:0px;">
         <div class="ui stackable grid">
-            <div class="ui sixteen wide column" class="sad">
-                <div class="ui text fluid menu" style="margin:0em;padding-top:0.5em;padding-bottom:0.5em;border-bottom:1px solid #e9e9e9;">
-                    <a style="margin-left:1em;" id="hamburger-link" class="item"><i class="bars icon" style="color:#000;"></i></a>
+            <div class="ui text fluid menu" style="background:white;margin:0em;padding-top:1.5em;padding-bottom:0.5em;border-bottom:1px solid #e9e9e9;">
+                <a style="margin-left:0em;" id="hamburger-link" class="item"><i class="bars icon" style="color:#000;"></i></a>
 
-                    <a class="item" href="/" style="outline:none;display:inline-block;margin-right: 10px;text-align:center;padding-left:0;margin-left: 0px;padding-top: 0px;margin-top:2px;">
+                <a class="item" href="/" style="outline:none;display:inline-block;margin-right: 10px;text-align:center;padding-left:0;margin-left: 0px;padding-top: 0px;margin-top:2px;">
 
-                        <span style="display:inline-block;margin-top:0em;font-weight:800;font-family: 'lato';font-size:1.8em;color:#222;">EveryLibrary</span>
+                    <span style="display:inline-block;margin-top:0em;font-weight:800;font-family: 'lato';font-size:1.8em;color:#222;">EveryLibrary</span>
 
-                    </a>
-                </div>
+                </a>
 
             </div>
-            <div class="ui four wide column" id="sidebarui">
+            <div id="sidebarui">
                 <div class="show-on-mobile" style="width:100%;">
                     <nav id="navSidebar">
                         <div class="ui vertical fluid text menu" style="margin:0;margin-left:5%;">
@@ -54,7 +56,7 @@
                                 Borrowed books
                             </a>
                             <a href="{% url 'checkout' %}" class="item">
-                                Borrow a book
+                                Checkout a book
                             </a>
                             <a href="{% url 'newbook' %}" class="item">
                                 New book

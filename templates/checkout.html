@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+    .ui.search {
+        margin-bottom: 1em;
+    }
+
+</style>
+<div class="ui message error"><i class="exclamation icon"></i>{{ error }}</div>
 <form action="{% url 'checkout' %}" class="ui form" method="POST">
     {% csrf_token %}
     {{form.acc}}
@@ -12,7 +19,7 @@
         <div class="results"></div>
     </div>
     {{form.returndate}}
-    <button type="submit" class="ui button">Checkout</button>
+    <button type="submit" class="ui button blue">Checkout</button>
 </form>
 <script>
     $('.ui.search#usersearch')
@@ -26,7 +33,7 @@
                         results: []
                     }
                     response.results.forEach(function (result) {
-                        res.results.push({ 'title': result, 'description': result });
+                        res.results.push(result);
                     })
                     console.log(res);
                     return res

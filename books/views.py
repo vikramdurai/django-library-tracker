@@ -98,7 +98,13 @@ def api_search(request):
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
     elif origin == "checkout":
         b = request.GET.get("name", "")
-        results = UserMember.objects.filter(user__username__istartswith=b).values_list("user__username")
+        results = []
+        members = UserMember.objects.filter(user__username__istartswith=b).all()
+        for i in members:
+            results.append({
+                "title": i.user.username,
+                "description": i.borrower.name,
+            })
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
 
     elif origin == "books":
@@ -201,6 +207,7 @@ def checkout(request):
             book = Book.objects.filter(acc=form.cleaned_data["acc"])
             if book.exists():
                 if RegisterEntry.is_borrowed(book[0]):
+                    print("isborrowed")
                     return render(request, "checkout.html", {"form":form, "user_staff": user_staff, "error": "Already borrowed book"})
                 else:
                     # create a new register entry
@@ -224,7 +231,7 @@ def checkout(request):
                     #     return msg.send()
                     print("User email:", borrowing_user[0].email)
                     print("Username:", borrowing_user[0].username)
-                    send_html_email(to_list=[borrowing_user[0].email],subject="You've borrowed a book - Everylibrary.co",template_name="email.html",sender=settings.EMAIL_HOST_USER,context={"user": borrowing_user, "entry": re, "book": book[0], "library": user_staff.library})
+                    # send_html_email(to_list=[borrowing_user[0].email],subject="You've borrowed a book - Everylibrary.co",template_name="email.html",sender=settings.EMAIL_HOST_USER,context={"user": borrowing_user, "entry": re, "book": book[0], "library": user_staff.library})
                     return redirect("index")
             else:
                 return render(request, "checkout.html", {"form":form, "user_staff": user_staff})

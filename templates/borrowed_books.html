@@ -21,7 +21,7 @@
                 {% else %}
                 <td>{{ i.borrower }}</td>
                 {% endif %}
-                <td><a href="{% url 'checkin' i.book.publication.slug i.book.acc %}">Return</a></td>
+                <td><a href="{% url 'checkin' i.book.publication.slug i.book.acc %}">Checkin</a></td>
             </tr>
             {% endfor %}
         </tbody>
