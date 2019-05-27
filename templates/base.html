@@ -29,66 +29,64 @@
 </head>
 
 <body>
-    <div class="ui main" style="margin:0px;">
-        <div class="ui stackable grid">
-            <div class="ui text fluid menu" style="background:white;margin:0em;padding-top:1.5em;padding-bottom:0.5em;border-bottom:1px solid #e9e9e9;">
-                <a style="margin-left:0em;" id="hamburger-link" class="item"><i class="bars icon" style="color:#000;"></i></a>
+    <div class="ui stackable grid">
+        <div class="ui text fluid menu" style="background:white;margin:0em;padding-top:1.5em;padding-bottom:0.5em;border-bottom:1px solid #e9e9e9;">
+            <a style="margin-left:0em;" id="hamburger-link" class="item"><i class="bars icon" style="color:#000;"></i></a>
 
-                <a class="item" href="/" style="outline:none;display:inline-block;margin-right: 10px;text-align:center;padding-left:0;margin-left: 0px;padding-top: 0px;margin-top:2px;">
+            <a class="item" href="/" style="outline:none;display:inline-block;margin-right: 10px;text-align:center;padding-left:0;margin-left: 0px;padding-top: 0px;margin-top:2px;">
 
-                    <span style="display:inline-block;margin-top:0em;font-weight:800;font-family: 'lato';font-size:1.8em;color:#222;">EveryLibrary</span>
+                <span style="display:inline-block;margin-top:0em;font-weight:800;font-family: 'lato';font-size:1.8em;color:#222;">EveryLibrary</span>
 
-                </a>
+            </a>
 
+        </div>
+        <div id="sidebarui">
+            <div class="show-on-mobile" style="width:100%;">
+                <nav id="navSidebar">
+                    <div class="ui vertical fluid text menu" style="margin:0;margin-left:5%;">
+                        <a href="{% url 'index' %}" class="active teal item">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'search' %}" class="item">
+                            Search
+                        </a>
+                        {% if user_staff %}
+                        <a href="{% url 'borrowed_books' %}" class="item">
+                            Borrowed books
+                        </a>
+                        <a href="{% url 'checkout' %}" class="item">
+                            Checkout a book
+                        </a>
+                        <a href="{% url 'newbook' %}" class="item">
+                            New book
+                        </a>
+                        <a href="{% url 'newpublication' %}" class="item">
+                            New book title
+                        </a>
+                        <a href="{% url 'addstaff' %}" class="item">
+                            Add a staff account
+                        </a>
+                        <a href="{% url 'pendingrequests' %}" class="item">
+                            Pending user join requests
+                        </a>
+                        {% endif %}
+                        {% if request.user.is_authenticated %}
+                        <span>Logged in as <strong>{{ request.user.username }}</strong></span>
+                        <a href="{% url 'logout' %}" class="item">
+                            Logout
+                        </a>
+                        {% endif %}
+                    </div>
+
+
+                </nav>
             </div>
-            <div id="sidebarui">
-                <div class="show-on-mobile" style="width:100%;">
-                    <nav id="navSidebar">
-                        <div class="ui vertical fluid text menu" style="margin:0;margin-left:5%;">
-                            <a href="{% url 'index' %}" class="active teal item">
-                                Dashboard
-                            </a>
-                            <a href="{% url 'search' %}" class="item">
-                                Search
-                            </a>
-                            {% if user_staff %}
-                            <a href="{% url 'borrowed_books' %}" class="item">
-                                Borrowed books
-                            </a>
-                            <a href="{% url 'checkout' %}" class="item">
-                                Checkout a book
-                            </a>
-                            <a href="{% url 'newbook' %}" class="item">
-                                New book
-                            </a>
-                            <a href="{% url 'newpublication' %}" class="item">
-                                New book title
-                            </a>
-                            <a href="{% url 'addstaff' %}" class="item">
-                                Add a staff account
-                            </a>
-                            <a href="{% url 'pendingrequests' %}" class="item">
-                                Pending user join requests
-                            </a>
-                            {% endif %}
-                            {% if request.user.is_authenticated %}
-                            <span>Logged in as <strong>{{ request.user.username }}</strong></span>
-                            <a href="{% url 'logout' %}" class="item">
-                                Logout
-                            </a>
-                            {% endif %}
-                        </div>
+            <div id="navFade"></div>
+        </div>
+        <div class="ui twelve wide column" id="content">
 
-
-                    </nav>
-                </div>
-                <div id="navFade"></div>
-            </div>
-            <div class="ui twelve wide column" id="content">
-
-                {% block content %}
-                {% endblock %}
-            </div>
+            {% block content %}
+            {% endblock %}
         </div>
     </div>
 </body>
