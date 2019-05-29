@@ -1,80 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
-{% if success %}
-<p>Success! <a href="{% url 'newbook' %}">Add a book copy</a> of this publication</p>
-{% else %}
-<a href="#" onclick="reveal()">Automatically make a book using ISBN</a><br>
-<div id="isbn_div" style="display:none">
-    <div class="ui input"><input type="text" id="isbn_input" placeholder="Insert the ISBN"></div>
-    <button onclick="isbn()">Search</button>
-    <!-- why, google, why must you own the internet like this -->
-    powered by Google
-    <br>
-    <br>
-</div>
 <form action="{% url 'newbook' %}" method="POST" class="ui form">
     {% csrf_token %}
-    <div class="ui search" id="authorsearch">
-        Author of the book: {{ form.author }}
+    <div class="ui search" id="titlesearch">
+        Book's title: {{ form.publication }}
         <div class="results"></div>
     </div>
-    Book title: {{ form.title }}
-    Special number (for libraries with own numbering system): {{ form.sno }}
-    Book code (you can use this internally): {{ form.code }}
-    Book accession number: {{ form.acc }}
-    Is available on Goodreads.com: {{ form.avgood }} <br>
-    Genre of the book (e.g Adventure, Fantasy): {{ form.genre }}
-    <button type="submit" class="ui button submit">Add book title</button>
+    Accession number: {{ form.acc }}
+    <button type="submit" class="button ui blue">Add book</button>
 </form>
 <script>
-    function reveal() {
-        $("#isbn_div")
-            .transition("fly left")
-    }
-    function isbn() {
-        var isbn_code = $("#isbn_input").val();
-        console.log(isbn_code)
-        $("#isbn_input").val("");
-        fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn_code)
-            .then(data => data.json())
-            .then(function (res) {
-                var isbn_data = res.items[0].volumeInfo;
-                var data = {
-                    title: (function () { return isbn_data.subtitle ? isbn_data.title + isbn_data.subtitle : isbn_data.title })(),
-                    author: isbn_data.authors[0],
-                    // code: isbn_data.authors[0].split(" ")[0].slice(0, 1) + isbn_data.authors[0].split(" ")[1].slice(0, 1),
-                    genre: (function () { return isbn_data["categories"] ? isbn_data["categories"] : "No data available" }()),
-                }
-                console.log(data);
-                $("#b-title").val(data.title);
-                $('#b-author').val(data.author);
-                $("#b-genre").val(data.genre);
-            })
-            .catch(err => {
-                console.log("An error occurred:", err)
-            })
-    }
-    $('.ui.search#authorsearch')
+    $('.ui.search#titlesearch')
         .search({
             // change search endpoint to a custom endpoint by manipulating apiSettings
             apiSettings: {
-                url: '/apisearch/?name={query}&&origin=authors',
+                url: '/apisearch/?name={query}&&origin=titles',
                 onResponse: function (response) {
                     console.log(response);
                     var res = {
                         results: []
                     }
                     response.results.forEach(function (result) {
-                        res.results.push({ 'title': result, 'description': result });
+                        res.results.push({ 'title': result.title, 'description': result.description });
                     })
-                    console.log(res);
                     return res
                 }
             },
             onSelect: function (result, response) {
-                $('input[name="author"]').val(result.title);
+                $('input[name="publication"]').val(result.title);
             },
         })
         ;
 </script>
-{% endif %}
+{% endblock %}
