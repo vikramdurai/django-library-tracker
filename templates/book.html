@@ -11,7 +11,7 @@
         </span>
     </div>
     <div class="image">
-        <img src="/static/books/image_{{ book.publication.slug }}.jpg">
+        <img id="book_image" src="/static/books/image_{{ book.publication.slug }}.jpg">
     </div>
     <div class="content">
         <div class="header">
@@ -27,4 +27,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    // stolen from stackoverflow
+    // https://stackoverflow.com/questions/18837735/check-if-image-exists-on-server-using-javascript
+    function imageExists(image_url) {
+
+        var http = new XMLHttpRequest();
+
+        http.open('HEAD', image_url, false);
+        http.send();
+
+        return http.status != 404;
+
+    }
+    if (!imageExists("/static/books/image_{{ book.publication.slug }}.jpg")) {
+        $("#book_image").attr("src", "http://dynamicmediainstitute.org/wp-content/themes/dynamic-media-institute/imagery/default-book.png")
+    }
+</script>
 {% endblock %}
