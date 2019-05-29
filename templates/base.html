@@ -68,24 +68,24 @@
                 <a href="{% url 'search' %}" class="item">
                     Search
                 </a>
+                <div class="ui divider"></div>
                 {% if user_staff %}
                 <a href="{% url 'borrowed_books' %}" class="item">
-                    Borrowed books
+                    Checkin a book
                 </a>
                 <a href="{% url 'checkout' %}" class="item">
                     Checkout a book
                 </a>
+                <div class="ui divider"></div>
                 <a href="{% url 'newbook' %}" class="item">
-                    New book
+                    Add a book to the library
                 </a>
-                <a href="{% url 'newpublication' %}" class="item">
-                    New book title
-                </a>
+                <div class="ui divider"></div>
                 <a href="{% url 'addstaff' %}" class="item">
                     Add a staff account
                 </a>
                 <a href="{% url 'pendingrequests' %}" class="item">
-                    Pending user join requests
+                    Approve pending membership requests to your library
                 </a>
                 {% endif %}
                 {% if request.user.is_authenticated %}
