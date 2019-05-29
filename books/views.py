@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
+from django.db.models import Q
 
 from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, UserConfigForm
 from .models import Library, Author, Book, Publication, UserStaff, UserMember, UserJoinRequest, RegisterEntry, ExtendLog, Borrower
@@ -100,7 +101,9 @@ def api_search(request):
         b = request.GET.get("name", "")
         results = []
         members = UserMember.objects.filter(user__username__istartswith=b).all()
-        for i in members:
+        borrower_member_search = members = UserMember.objects.filter(borrower__name__istartswith=b).all()
+        search_ = UserMember.objects.filter(Q(user__username__istartswith=b)|Q(borrower__name__istartswith=b)).all()
+        for i in search_:
             results.append({
                 "title": i.user.username,
                 "description": i.borrower.name,
