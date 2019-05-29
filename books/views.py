@@ -85,7 +85,7 @@ def pending_requests(request):
     if not user_staff:
         return HttpResponseForbidden()
     user_requests = UserJoinRequest.objects.filter(approved=False, library=user_staff.library).all()
-    return render(request, "userrequests.html", {"user_join_requests": user_requests})
+    return render(request, "userrequests.html", {"user_join_requests": user_requests, "user_staff": user_staff})
 
 # will only be used by javascript
 def api_search(request):
@@ -166,7 +166,7 @@ def new_book(request):
             return redirect("titles", slug=b.publication.slug, acc=b.acc)
     else:
         form = NewBookForm()
-    return render(request, "newbook.html", {"form": form})
+    return render(request, "newbook.html", {"form": form, "user_staff": user_staff})
 
 
 # new_publication
@@ -189,10 +189,10 @@ def new_publication(request):
                 slug="",
             )
             p.save()
-            return render(request, "newpub.html", {"success": True, "form": form})
+            return render(request, "newpub.html", {"success": True, "form": form, "user_staff": user_staff})
     else:
         form = NewPubForm()
-    return render(request, "newpub.html", {"form": form})
+    return render(request, "newpub.html", {"form": form, "user_staff": user_staff})
 
 # checkout
 @login_required
@@ -288,6 +288,7 @@ def view_books(request):
 @login_required
 def search(request):
     form = None
+    user_staff = staff(request)
     if request.method == "POST":
         form = SearchForm(request.POST)
         if form.is_valid():
@@ -307,6 +308,7 @@ def search(request):
             ctx = {
                 "form": form,
                 "book_results": books,
+                "user_staff": user_staff,
                 "author_results": authors,
                 "search_text": form.cleaned_data["search_text"],
                 "books_from_authors": books_from_authors
@@ -314,12 +316,13 @@ def search(request):
             return render(request, "search.html", ctx)
     else:
         form = SearchForm()
-    return render(request, "search.html", {"form": form})
+    return render(request, "search.html", {"form": form, "user_staff": user_staff})
 
 # extend
 @login_required
 def extend(request, slug, acc):
     book = Book.objects.get(acc=acc)
+    user_staff = staff(request)
     regentry = RegisterEntry.objects.filter(
         book=book, action="borrow")[0]
     form = None
@@ -336,7 +339,7 @@ def extend(request, slug, acc):
             return redirect("index")
     else:
         form = ExtendForm()
-    return render(request, "extend.html", {"form": form, "book": book})
+    return render(request, "extend.html", {"form": form, "book": book, "user_staff": user_staff})
 # view
 @login_required
 def view_one_book(request, slug, acc):
@@ -344,11 +347,7 @@ def view_one_book(request, slug, acc):
     book = Book.objects.get(acc=acc)
     book_image = static("books/"+ book.publication.slug +".jpg")
     user_staff = UserStaff.objects.filter(user=request.user).all()
-    ctx = None
-    if not user_staff:
-        ctx = {"book": book, "book_image": book_image}
-    else:
-        ctx = {"book": book, "user_staff": user_staff, "book_image": book_image}
+    ctx = {"book": book, "user_staff": user_staff, "book_image": book_image}
     return render(request, "book.html", ctx)
 
 def bye_bye(request):

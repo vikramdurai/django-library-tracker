@@ -1,6 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>All borrowed books</h2>
+<div class="ui search" id="booksearch">
+    <input type="text" placeholder="Search for books" class="prompt">
+    <div class="results"></div>
+</div>
+<script>
+    var entries_ = [
+        {% for i in entries %}
+    {
+        title: "{{i.book.publication.title}} (" + "{{ i.book.acc }})",
+            acc: "{{i.book.acc}}",
+                description: "{{i.user.borrower.name}} {{i.action}}ed"
+    },
+    {% endfor %}
+    ];
+    $('.ui.search#booksearch').search({
+        source: entries_,
+        onSelect: function (result, response) {
+            console.log(result)
+            window.location = window.location + "#" + result.acc;
+        }
+    });
+</script>
 <div id="books">
     <table class="ui celled table">
         <thead>
@@ -13,7 +35,7 @@
         </thead>
         <tbody>
             {% for i in entries %}
-            <tr>
+            <tr id="{{i.book.acc}}">
                 <td><a href="{% url 'titles' i.book.publication.slug i.book.acc %}">{{ i.book.publication }}</a></td>
                 <td>{{ i.book.acc }}</td>
                 {% if not i.borrower %}
