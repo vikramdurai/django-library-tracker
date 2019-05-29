@@ -3,7 +3,8 @@
 {% block content %}
 <form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
-    <div class="ui input">{{ form }}<button type="submit" class="ui button red">Go</button></div>
+    <div class="ui input">{{ form }}<button class="ui button red" style="margin-left: 0.5em;" type="submit">Go</button>
+    </div>
 </form>
 <h2>My borrowed books</h2>
 {% if borrowed_entries %}

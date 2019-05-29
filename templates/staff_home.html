@@ -2,7 +2,8 @@
 {% block content %}
 <form action="{% url 'search' %}" method="POST">
     {% csrf_token %}
-    <div class="ui input">{{ form }}<button type="submit" class="ui button">Go</button></div>
+    <div class="ui input">{{ form }}<button type="submit" style="margin-left: 0.5em;" class="ui button red">Go</button>
+    </div>
 </form>
 <p>You belong to: <strong>{{ user_staff.library }}</strong></p>
 
