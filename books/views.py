@@ -105,6 +105,7 @@ def api_search(request):
                 "title": i.user.username,
                 # "description": i.borrower.name,
             })
+            print(i.borrower)
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
 
     elif origin == "books":
