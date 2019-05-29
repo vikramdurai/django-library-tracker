@@ -103,7 +103,7 @@ def api_search(request):
         for i in members:
             results.append({
                 "title": i.user.username,
-                "description": i.borrower.name,
+                # "description": i.borrower.name,
             })
         return HttpResponse(dumps({'results':list(results)}), status=200, content_type="application/json")
 
