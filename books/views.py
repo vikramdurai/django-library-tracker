@@ -100,8 +100,6 @@ def api_search(request):
     elif origin == "checkout":
         b = request.GET.get("name", "")
         results = []
-        members = UserMember.objects.filter(user__username__istartswith=b).all()
-        borrower_member_search = members = UserMember.objects.filter(borrower__name__istartswith=b).all()
         search_ = UserMember.objects.filter(Q(user__username__istartswith=b)|Q(borrower__name__istartswith=b)).all()
         for i in search_:
             results.append({
