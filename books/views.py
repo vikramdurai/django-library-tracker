@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
 from django.db.models import Q
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, UserConfigForm
 from .models import Library, Author, Book, Publication, UserStaff, UserMember, UserJoinRequest, RegisterEntry, ExtendLog, Borrower
@@ -281,7 +282,28 @@ def view_books(request):
     user_staff = staff(request)
     if not user_staff:
         return HttpResponseForbidden()
-    return render(request, "borrowed_books.html", {"entries": RegisterEntry.get_all_borrowed_entries(), "user_staff":user_staff})
+    context = {
+        # "entries": RegisterEntry.get_all_borrowed_entries(),
+        "user_staff":user_staff
+    }
+    return render(request, "borrowed_books.html", context)
+
+@login_required
+def api_view_borrowed_books(request):
+    def regEntryToDict(r):
+        return {
+            "publication": r.book.publication.title,
+            "pub-string": r.book.publication.slug,
+            "book-acc": r.book.acc,
+            "borrower": r.borrower.name,
+            "borrow-date": r.most_recent_extendlog.new_returndate,
+        }
+    query = request.GET.get("query", "")
+    sample = RegisterEntry.get_all_borrowed_entries().all()
+    if query == "":
+        return HttpResponse(dumps({'results':[regEntryToDict(i) for i in list(sample)]}, cls=DjangoJSONEncoder), status=200, content_type="application/json")
+    results = sample.filter(book__publication__title__search=query).all()
+    return HttpResponse(dumps({'results':[regEntryToDict(i) for i in list(results)]}, cls=DjangoJSONEncoder), status=200, content_type="application/json")
 
 # User flows
 # search

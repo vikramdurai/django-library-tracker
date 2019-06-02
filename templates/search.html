@@ -7,7 +7,11 @@
     </div><button class="ui button red" style="margin-left: 0.5em;" type="submit">Go</button>
 </form>
 <div id="results">
+    {% if search_text %}
     <h2>Search results for {{ search_text }}</h2>
+    {% else %}
+    <h2>Search results for absolutely nothing</h2>
+    {% endif %}
     <h3>Books</h3>
     {% if book_results %}
     <table class="ui celled table">
@@ -31,7 +35,9 @@
         </tbody>
     </table>
     {% else %}
+    {% if search_text %}
     <h4>Your search ('{{ search_text }}') did not match any books in the library database.</h4>
+    {% endif %}
     {% endif %}
     <h3>Authors</h3>
     {% if author_results %}
@@ -64,7 +70,9 @@
     </table>
     {% endfor %}
     {% else %}
+    {% if search_text %}
     <h4>Your search ('{{ search_text }}') did not match any authors in the library database.</h4>
+    {% endif %}
     {% endif %}
 
 </div>

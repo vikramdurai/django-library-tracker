@@ -1,28 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>All borrowed books</h2>
-<div class="ui search" id="booksearch">
-    <input type="text" placeholder="Search for books" class="prompt">
-    <div class="results"></div>
-</div>
-<script>
-    var entries_ = [
-        {% for i in entries %}
-    {
-        title: "{{i.book.publication.title}} (" + "{{ i.book.acc }})",
-            acc: "{{i.book.acc}}",
-                description: "{{i.user.borrower.name}} {{i.action}}ed"
-    },
-    {% endfor %}
-    ];
-    $('.ui.search#booksearch').search({
-        source: entries_,
-        onSelect: function (result, response) {
-            console.log(result)
-            window.location = window.location + "#" + result.acc;
-        }
-    });
-</script>
+<div class="ui input"><input type="text" id="booksearch" placeholder="Search for books"></div>
 <div id="books">
     <table class="ui celled table">
         <thead>
@@ -33,20 +12,69 @@
                 <th></th>
             </tr>
         </thead>
-        <tbody>
-            {% for i in entries %}
-            <tr id="{{i.book.acc}}">
-                <td><a href="{% url 'titles' i.book.publication.slug i.book.acc %}">{{ i.book.publication }}</a></td>
+        <tbody id="results">
+        </tbody>
+    </table>
+</div>
+<!-- 
+<tr id="{{i.book.acc}}">
+                <td><a href="">{{ i.book.publication }}</a></td>
                 <td>{{ i.book.acc }}</td>
                 {% if not i.borrower %}
                 <td>{{ i.user.borrower }}</td>
                 {% else %}
                 <td>{{ i.borrower }}</td>
                 {% endif %}
-                <td><a href="{% url 'checkin' i.book.publication.slug i.book.acc %}">Checkin</a></td>
+                <td><a href="">Checkin</a></td>
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+ -->
+<script>
+    function makeHTMLFromJSON(json_) {
+        var starter_template = function (pub_string, book_acc, publication, borrower) {
+            return `
+        <tr>
+                <td><a href="/titles/${pub_string}/book/${book_acc}">${publication}</a></td>
+                <td>${book_acc}</td>
+                <td>${borrower}</td>
+                <td><a href="/checkin/${pub_string}/book/${book_acc}">Checkin</a></td>
+        </tr>
+        `;
+        };
+        return starter_template(json_["pub-string"], json_["book-acc"], json_["publication"], json_["borrower"]);
+    }
+    _results = [];
+    $().ready(function () {
+        $.ajax({
+            url: "{% url 'api_get_borrowed_books' %}",
+            success: function (results) {
+                console.log(results)
+                var _results = [];
+                for (var i = 0; i < results.results.length; i++) {
+                    _results.push(makeHTMLFromJSON(results.results[i]))
+                }
+                for (var i = 0; i < _results.length; i++) {
+                    $("#results").append($(_results[i]));
+                }
+            }
+        })
+        $("#booksearch").keyup(function (e) {
+            console.log($("#booksearch").val());
+            $.get(
+                "{% url 'api_get_borrowed_books' %}",
+                { query: $("#booksearch").val() },
+                function (results) {
+                    console.log(results);
+                    var _results = [];
+                    $("#results").html("<tbody id='results'></tbody>")
+                    for (var i = 0; i < results.results.length; i++) {
+                        _results.push(makeHTMLFromJSON(results.results[i]))
+                    }
+                    for (var i = 0; i < _results.length; i++) {
+                        $("#results").append($(_results[i]));
+                    }
+                }
+            )
+        })
+    });
+</script>
 {% endblock %}

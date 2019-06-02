@@ -26,5 +26,7 @@ urlpatterns = [
     url(r'^bye-bye', views.bye_bye, name="bye_bye"),
     url(r'^pending-requests', views.pending_requests, name="pendingrequests"),
     url(r'^approve-request', views.approve_requests, name="approverequest"),
-    url(r'^apisearch', views.api_search, name="apisearch")
+    url(r'^apisearch', views.api_search, name="apisearch"),
+    url(r'^api_get_borrowed_books', views.api_view_borrowed_books,
+        name="api_get_borrowed_books")
 ]
