@@ -47,8 +47,6 @@
         $.ajax({
             url: "{% url 'api_get_borrowed_books' %}",
             success: function (results) {
-                console.log(results)
-                var _results = [];
                 for (var i = 0; i < results.results.length; i++) {
                     _results.push(makeHTMLFromJSON(results.results[i]))
                 }
@@ -57,13 +55,12 @@
                 }
             }
         })
-        $("#booksearch").keyup(function (e) {
+        $("#booksearch").keyup(function () {
             console.log($("#booksearch").val());
             $.get(
                 "{% url 'api_get_borrowed_books' %}",
                 { query: $("#booksearch").val() },
                 function (results) {
-                    console.log(results);
                     var _results = [];
                     $("#results").html("<tbody id='results'></tbody>")
                     for (var i = 0; i < results.results.length; i++) {

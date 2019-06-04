@@ -300,10 +300,14 @@ def api_view_borrowed_books(request):
         }
     query = request.GET.get("query", "")
     sample = RegisterEntry.get_all_borrowed_entries().all()
-    if query == "":
-        return HttpResponse(dumps({'results':[regEntryToDict(i) for i in list(sample)]}, cls=DjangoJSONEncoder), status=200, content_type="application/json")
-    results = sample.filter(book__publication__title__search=query).all()
-    return HttpResponse(dumps({'results':[regEntryToDict(i) for i in list(results)]}, cls=DjangoJSONEncoder), status=200, content_type="application/json")
+    regentry_books = sample.filter(book__publication__title__icontains=query).all()
+    regentry_borrowers = sample.filter(borrower__name__icontains=query).all()
+    final_books = [regEntryToDict(i) for i in list(regentry_books)]
+    final_borrowers = [regEntryToDict(i) for i in regentry_borrowers if i not in list(regentry_books)]
+    if not query:
+        return HttpResponse(dumps({'results':[regEntryToDict(i) for i in list(sample)] + final_borrowers}, cls=DjangoJSONEncoder), status=200, content_type="application/json")
+    resp = dumps({"results": final_books + final_borrowers}, cls=DjangoJSONEncoder)
+    return HttpResponse(resp, status=200, content_type="application/json")
 
 # User flows
 # search
