@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.dateparse import parse_datetime
+# from django.utils import timezone
+# from django.utils.dateparse import parse_datetime
+from datetime import datetime
 from books.models import *
 import csv
 
@@ -98,8 +100,18 @@ def i_books(csv_filename):
                 # There's an existing copy of the book
                 # in the library
                 p = p[0]
-                b = Book(publication=p, acc=i[7],
-                         date_added=parse_datetime(i[9]))
+
+                _dt = None
+                dt = None
+                try:
+                    _dt = datetime.strptime(i[9], "%d-%b-%Y")
+                except ValueError as e:
+                    if not i[9] == "":
+                        _dt = datetime.strptime('0'+i[9], "%d-%B-%Y")
+                if _dt:
+                    dt = _dt.date()
+                pass
+                b = Book(publication=p, library=Library.objects.get(name='Good Earth Malhar Library'), acc=i[7], date_added=dt)
                 b.save()
             else:
                 # This is a completely new book
@@ -109,7 +121,18 @@ def i_books(csv_filename):
                                 available_goodreads=goodreads_converter(
                                     i[8]))
                 p.save()
-                b = Book(publication=p, acc=i[7], date_added=parse_datetime(i[9]))
+                print(i[9])
+                _dt = None
+                dt = None
+                try:
+                    _dt = datetime.strptime(i[9], "%d-%b-%Y")
+                except ValueError as e:
+                    if not i[9] == "":
+                        _dt = datetime.strptime('0'+i[9], "%d-%B-%Y")
+                if _dt:
+                    dt = _dt.date()
+                pass
+                b = Book(publication=p, library=Library.objects.get(name='Good Earth Malhar Library'), acc=i[7], date_added=dt)
                 b.save()
             b.save()
 
@@ -143,7 +166,20 @@ def i_register(csv_filename):
                 continue
             else:
                 book = book.all()[0]
-            r = RegisterEntry(library=Library.objects.get(id=1), borrower=borrower, date=parse_datetime(i[0]),
+            _dt = None
+            dt = None 
+            try:
+                _dt = datetime.strptime(i[0], "%d-%b-%Y")
+            except ValueError as e:
+                if not i[0] == "":
+                    try:
+                        _dt = datetime.strptime('0'+i[0], "%d-%B-%Y")
+                    except ValueError as e:
+                        _dt = datetime.strptime(i[0], "%d-%b-%y")
+            if _dt:
+                dt = _dt.date()
+            pass
+            r = RegisterEntry(library=Library.objects.get(id=1), borrower=borrower, date=dt,
                               action="borrow", book=book)
             r.save()
 

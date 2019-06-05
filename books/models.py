@@ -51,7 +51,7 @@ class Publication(models.Model):
 
 class Book(models.Model):
     publication = models.ForeignKey(Publication, null=True)
-    date_added = models.DateTimeField("Date added to the library", null=True)
+    date_added = models.DateField("Date added to the library", null=True)
     acc = models.CharField(max_length=200, null=True)
     library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
 
@@ -120,7 +120,7 @@ class ExtendLog(models.Model):
 class RegisterEntry(models.Model):
     book = models.ForeignKey(Book, on_delete=models.PROTECT, null=True)
     most_recent_extendlog = models.ForeignKey(ExtendLog, null=True)
-    date = models.DateTimeField(null=True)
+    date = models.DateField(null=True)
     action = models.CharField(max_length=6)
     library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)
     borrower = models.ForeignKey(Borrower, null=True)
