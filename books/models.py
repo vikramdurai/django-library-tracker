@@ -30,6 +30,7 @@ class Publication(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(
         Author, on_delete=models.PROTECT, related_name="books")
+    img = models.URLField(null=True)
     code = models.CharField(max_length=100, null=True)
     available_goodreads = models.BooleanField(default=False)
     genre = models.CharField(max_length=200, null=True)
@@ -44,10 +45,13 @@ class Publication(models.Model):
 
     def get_copies(self):
         return Book.objects.filter(publication=self)
+    
+    @staticmethod
+    def get_all_with_images():
+        return Publication.objects.all().exclude(img=None).all()
 
     def __str__(self):
         return self.title
-
 
 class Book(models.Model):
     publication = models.ForeignKey(Publication, null=True)

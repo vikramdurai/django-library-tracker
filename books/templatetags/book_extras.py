@@ -16,3 +16,8 @@ def books_by_author(a):
     for i in publications:
         books.extend(list(Book.objects.filter(publication=i).all()))
     return books
+
+
+@register.simple_tag
+def get_book_url(slug):
+    return "books/image_%s.jpg" % slug

@@ -44,8 +44,10 @@ def index(request):
         borrowed_entries = [
             i for i in reg_entries if i.user and i.user.user.username == request.user.username]
         user_libraries = [i.library for i in user_members]
+        # get 6 books to display on the homepage
+        r_books = list(Book.objects.all())[:6]
         ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries,
-            "user_libraries": user_libraries}
+            "user_libraries": user_libraries, "r_books": r_books}
         return render(request, "homepage.html", ctx)
 
     elif list(user_requests) != []:

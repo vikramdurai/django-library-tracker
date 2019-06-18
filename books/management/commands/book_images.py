@@ -20,7 +20,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             if options["all"]:
-                books = Publication.objects.all()
+                # don't process books with images
+                books = Publication.objects.all().filter(img=None).all()
                 iteration = 0
                 _i = 0
                 print("Number of books to process:", len(books))
@@ -28,6 +29,14 @@ class Command(BaseCommand):
 
                 def do(iteration=iteration, _i=_i):
                     for i in books[iteration:]:
+                        try:
+                            # don't process books with images
+                            open("books/static/books/image_"+i.slug+".jpg")
+                            i.img = "https://everylibrary.co/static/books/image_"+i.slug+".jpg"
+                            i.save()
+                            continue
+                        except FileNotFoundError:
+                            pass
                         try:
                             data = urlopen(
                                 "https://www.googleapis.com/books/v1/volumes?q=title:"+quote(i.title), data=None, timeout=5)
@@ -40,10 +49,12 @@ class Command(BaseCommand):
                                 continue
                             retrieve(b_data["imageLinks"]["thumbnail"],
                                      "books/static/books/image_"+i.slug+".jpg")
+                            i.img = "https://everylibrary.co/static/books/image_"+i.slug+".jpg"
+                            i.save()
 
                         except HTTPError as e:
                             # we are not permitted to use the API
-                            if "403" in str(e):
+                            if "403" in str(e) or "503" in str(e):
                                 # wait for a while
                                 # the reason being that the
                                 # Google Books API doesn't like
@@ -73,6 +84,8 @@ class Command(BaseCommand):
                               p.title)
                         return
                     retrieve(p_data["imageLinks"]["thumbnail"], f_to_save)
+                    p.img = "https://everylibrary.co/static/"+f_to_save
+                    p.save()
                     print("Scraped image for '%s', saved image at" %
                           p.title, f_to_save)
                 except HTTPError as e:

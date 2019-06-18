@@ -4,3 +4,5 @@ data/certbot/conf/*.pem
 *.pem
 spreadsheets
 __pycache__
+books/static
+staticfiles/
