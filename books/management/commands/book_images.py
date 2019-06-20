@@ -3,6 +3,7 @@ from urllib.request import urlopen
 from urllib.parse import quote
 from urllib.error import HTTPError
 from urllib.request import urlretrieve as retrieve
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from json import loads
 from time import sleep
 from books.models import *
@@ -31,7 +32,7 @@ class Command(BaseCommand):
                     for i in books[iteration:]:
                         try:
                             # don't process books with images
-                            open("books/static/books/image_"+i.slug+".jpg")
+                            open(static("books/image_"+i.slug+".jpg"))
                             i.img = "https://everylibrary.co/static/books/image_"+i.slug+".jpg"
                             i.save()
                             continue
@@ -48,7 +49,7 @@ class Command(BaseCommand):
                                 # no image was available for this book
                                 continue
                             retrieve(b_data["imageLinks"]["thumbnail"],
-                                     "books/static/books/image_"+i.slug+".jpg")
+                                     "../../../staticfiles/books/image_%s.jpg" % i.slug)
                             i.img = "https://everylibrary.co/static/books/image_"+i.slug+".jpg"
                             i.save()
 
@@ -73,7 +74,7 @@ class Command(BaseCommand):
             elif options["title"]:
                 print(options["title"])
                 p = Publication.objects.get(slug=options["title"])
-                f_to_save = "books/static/books/image_"+p.slug+".jpg"
+                f_to_save = "../../../staticfiles/books/image_%s.jpg" % p.slug
                 try:
                     data = urlopen(
                         "https://www.googleapis.com/books/v1/volumes?q=title:"+quote(p.title), data=None, timeout=5)
@@ -84,7 +85,7 @@ class Command(BaseCommand):
                               p.title)
                         return
                     retrieve(p_data["imageLinks"]["thumbnail"], f_to_save)
-                    p.img = "https://everylibrary.co/static/"+f_to_save
+                    p.img = "https://everylibrary.co/"+f_to_save
                     p.save()
                     print("Scraped image for '%s', saved image at" %
                           p.title, f_to_save)

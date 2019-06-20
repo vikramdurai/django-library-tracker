@@ -44,10 +44,8 @@ def index(request):
         borrowed_entries = [
             i for i in reg_entries if i.user and i.user.user.username == request.user.username]
         user_libraries = [i.library for i in user_members]
-        # get 6 books to display on the homepage
-        r_books = list(Book.objects.all())[:6]
         ctx = {"form": SearchForm(), "borrowed_entries": borrowed_entries,
-            "user_libraries": user_libraries, "r_books": r_books}
+            "user_libraries": user_libraries}
         return render(request, "homepage.html", ctx)
 
     elif list(user_requests) != []:
@@ -79,6 +77,35 @@ def index(request):
             form = UserConfigForm()
         return render(request, "userconfig.html", {"form":form})
 
+
+def api_homepage(request):
+    from django.contrib.staticfiles.templatetags.staticfiles import static
+    def dictify(i):
+        return {
+            "author": i.publication.author.name,
+            "ongoodreads": i.publication.available_goodreads,
+            "book_url": static("books/image_%s.jpg" % i.publication.slug),
+            "publication": i.publication.title,
+            "date_added": i.date_added,
+            "book_acc": i.acc,
+            "book_genre": i.publication.genre,
+            "library": i.library.name
+        }
+    query = request.GET.get("query", "")
+    _results = list(Book.objects.all())[:10]
+    resp = None
+    results = []
+    for i in _results[:10]:
+        results.append(dictify(i))
+    if not query:
+        resp = dumps({"results": results}, cls=DjangoJSONEncoder)
+        return HttpResponse(resp, status=200, content_type="application/json")
+    _results = list(Book.objects.filter(Q(publication__title__icontains=query) | Q(publication__author__name__icontains=query)))[:10]
+    results = []
+    for i in _results:
+        results.append(dictify(i))
+    resp = dumps({"results": results}, cls=DjangoJSONEncoder)
+    return HttpResponse(resp, status=200, content_type="application/json")
 
 # Staff flows
 
