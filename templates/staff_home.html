@@ -1,27 +1,102 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<form action="{% url 'search' %}" method="POST">
-    {% csrf_token %}
-    <div class="ui input">{{ form }}<button type="submit" style="margin-left: 0.5em;" class="ui button red">Go</button>
-    </div>
-</form>
-<p>You belong to: <strong>{{ user_staff.library }}</strong></p>
-
-<div class="ui card">
-    <div class="content">
-        <a href="{% url 'borrowed_books' %}">
-            <i class="ui icon book"></i>
-            View all borrowed books
-        </a>
-        <br>
-    </div>
+<div class="ui fluid input">
+    <input type="text" id="booksearch" placeholder="Search for books..">
 </div>
-
-<div class="ui card">
-    <div class="content">
-        <a href="{% url 'addstaff' %}">
-            Add a new staff account
-        </a>
-    </div>
+<h3>Recent books</h3>
+<div id="cardslist" class="ui stackable four column grid"></div>
+<script>
+    console.log("Booksearch:", $("#booksearch"))
+    function makeHTMLFromJSON(json_) {
+        var starter_template = function (author, ongoodreads, book_url, publication, date_added, book_acc, book_genre, library) {
+            return `
+            <div class="column">
+                <div class="ui fluid card">
+                    <div class="content">
+                        <div class="left floated meta">Author: ${author}</div>
+                        <span class="right floated meta">
+                            ${ongoodreads ? 'Available on goodreads' : ''}
+                        </span>
+                    </div>
+                    <div class="image">
+                        <img class="book_image" id='${book_acc}' src="${book_url}" style="width:19em;height:15em;">
+                    </div>
+                    <div class="content">
+                        <div class="header">
+                            ${publication}
+                        </div>
+                        <div class="meta">
+                            Added on ${date_added}
+                        </div>
+                        <div class="description">
+                            Accession number: <strong>${book_acc}</strong> <br>
+                            Genre: <strong>${book_genre}</strong> <br>
+                            Library: <strong>${library}</strong> <br>
+                        </div>
+                    </div>
 </div>
+</div>
+`;
+        };
+        return starter_template(json_["author"], json_["ongoodreads"], json_["book_url"], json_["publication"],
+            json_["date_added"], json_["book_acc"], json_["book_genre"], json_["library"]);
+    }
+    var _results = [];
+    $().ready(function () {
+        $.ajax({
+            url: "{% url 'api_homepage' %}",
+            success: function (results) {
+                for (var i = 0; i < results.results.length; i++) {
+                    _results.push(makeHTMLFromJSON(results.results[i]))
+                }
+                for (var i = 0; i < _results.length; i++) {
+                    $("#cardslist").append($(_results[i]));
+                    function imageExists(image_url) {
+
+                        var http = new XMLHttpRequest();
+
+                        http.open('HEAD', image_url, false);
+                        http.send();
+
+                        return http.status != 404;
+
+                    }
+                    if (!imageExists(results.results[i].book_url)) {
+                        console.log(`Failed to find photo for ${results.results[i].publication} / ` + "#" + results.results[i].book_acc)
+                        $(`#${results.results[i].book_acc}`).attr("src", "http://dynamicmediainstitute.org/wp-content/themes/dynamic-media-institute/imagery/default-book.png")
+                        console.log("sucess")
+                    }
+                }
+            }
+        });
+        $("#booksearch").keyup(function () {
+            console.log($("#booksearch").val());
+            $.get("{% url 'api_homepage' %}", { query: $("#booksearch").val() }, function (results) {
+                var _results = [];
+                $("#cardslist")[0].innerHTML = "";
+                for (var i = 0; i < results.results.length; i++) {
+                    _results.push(makeHTMLFromJSON(results.results[i]))
+                }
+                for (var i = 0; i < _results.length; i++) {
+                    $("#cardslist").append($(_results[i]));
+                    function imageExists(image_url) {
+
+                        var http = new XMLHttpRequest();
+
+                        http.open('HEAD', image_url, false);
+                        http.send();
+
+                        return http.status != 404;
+
+                    }
+                    if (!imageExists(results.results[i].book_url)) {
+                        console.log(`Failed to find photo for ${results.results[i].publication} / ` + "#" + results.results[i].book_acc)
+                        $(`#${results.results[i].book_acc}`).attr("src", "http://dynamicmediainstitute.org/wp-content/themes/dynamic-media-institute/imagery/default-book.png")
+                        console.log("sucess")
+                    }
+                }
+            })
+        });
+    })
+</script> <br>
 {% endblock %}
