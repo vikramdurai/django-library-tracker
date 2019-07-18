@@ -86,6 +86,7 @@ def api_homepage(request):
             "ongoodreads": i.publication.available_goodreads,
             "book_url": static("books/image_%s.jpg" % i.publication.slug),
             "publication": i.publication.title,
+            "is_borrowed": RegisterEntry.is_borrowed(i),
             "date_added": i.date_added,
             "book_acc": i.acc,
             "book_genre": i.publication.genre,
@@ -94,16 +95,12 @@ def api_homepage(request):
     query = request.GET.get("query", "")
     _results = list(Book.objects.all())[:10]
     resp = None
-    results = []
-    for i in _results[:10]:
-        results.append(dictify(i))
+    results = [dictify(i) for i in _results[:10]]
     if not query:
         resp = dumps({"results": results}, cls=DjangoJSONEncoder)
         return HttpResponse(resp, status=200, content_type="application/json")
     _results = list(Book.objects.filter(Q(publication__title__icontains=query) | Q(publication__author__name__icontains=query)))[:10]
-    results = []
-    for i in _results:
-        results.append(dictify(i))
+    results = [dictify(i) for i in _results]
     resp = dumps({"results": results}, cls=DjangoJSONEncoder)
     return HttpResponse(resp, status=200, content_type="application/json")
 
