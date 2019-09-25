@@ -53,6 +53,10 @@ class NewPubForm(forms.Form):
     genre = forms.CharField(label="Genre", max_length=255, widget=forms.TextInput(
         attrs={"id": "b-genre", "placeholder": "Enter a genre"}
     ))
+    genre = forms.CharField(label="ISBN", max_length=255, widget=forms.TextInput(
+        attrs={"id": "b-isbn",
+               "placeholder": "Enter the ISBN of the book (optional)"}
+    ))
 
 
 class UserConfigForm(forms.Form):

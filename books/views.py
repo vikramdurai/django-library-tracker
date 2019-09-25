@@ -213,8 +213,15 @@ def new_publication(request):
                 code=form.cleaned_data["code"],
                 available_goodreads=form.cleaned_data["avgood"],
                 genre=form.cleaned_data["genre"],
+                isbn=form.cleaned_data["isbn"],
                 slug="",
             )
+            if not Publication.objects.filter(isbn=p.isbn).empty():
+                ctx = {"success": False, "form": form, "user_staff": user_staff, "error": "A book with this ISBN already exists."}
+                return render(request, "newpub.html", ctx)
+            if not Publication.objects.filter(code=p.code).empty():
+                ctx = {"success": False, "form": form, "user_staff": user_staff, "error": "A book with this code already exists."}
+                return render(request, "newpub.html", ctx)
             p.save()
             return render(request, "newpub.html", {"success": True, "form": form, "user_staff": user_staff})
     else:

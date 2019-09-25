@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import Library, Author, Publication, Book, RegisterEntry, Borrower, UserStaff, UserMember, UserJoinRequest, ExtendLog
+from .models import Library, Author, Publication, Book, RegisterEntry, Borrower, UserStaff, UserMember, UserJoinRequest, ExtendLog, Series, Genre
+
+
+class SeriesAdmin(admin.ModelAdmin):
+    list_display = ("num", "desc")
+
+
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "series")
 
 
 class PublicationAdmin(admin.ModelAdmin):
@@ -37,5 +45,7 @@ admin.site.register(UserMember, UserMemberAdmin)
 admin.site.register(UserJoinRequest, UserJoinRequestAdmin)
 admin.site.register(RegisterEntry, RegisterEntryAdmin)
 admin.site.register(ExtendLog, ExtendLogAdmin)
+admin.site.register(Series, SeriesAdmin)
+admin.site.register(Genre, GenreAdmin)
 admin.site.register(Borrower)
 admin.site.register(Library)

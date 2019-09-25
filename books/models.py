@@ -22,6 +22,21 @@ class Author(models.Model):
     def __str__(self):
         return self.name
 
+class Series(models.Model):
+    num = models.IntegerField(default=0)
+    desc = models.CharField(max_length=100)
+
+    def __str__(self):
+        return "%s %s" % (self.num, self.desc.lower().title())
+
+
+class Genre(models.Model):
+    name = models.CharField(null=True, max_length=200)
+    code = models.CharField(null=True, max_length=50)
+    series = models.ForeignKey(Series, on_delete=models.PROTECT, related_name="genres", null=True)
+
+    def as_list(self):
+        return [self.code, self.name]
 
 class Publication(models.Model):
     # Publication represents a single book title
@@ -31,11 +46,13 @@ class Publication(models.Model):
     author = models.ForeignKey(
         Author, on_delete=models.PROTECT, related_name="books")
     img = models.URLField(null=True)
-    code = models.CharField(max_length=100, null=True)
+    code = models.CharField(max_length=100, null=True, blank=True)
     available_goodreads = models.BooleanField(default=False)
+    genre_type = models.ForeignKey(Genre, null=True, on_delete=models.SET_NULL, related_name="publications")
     genre = models.CharField(max_length=200, null=True)
     price = models.IntegerField(null=True)
     slug = models.SlugField(max_length=255)
+    isbn = models.CharField(max_length=100, null=True)
     # image = models.ImageField(null=True)
 
     def save(self, *args, **kwargs):

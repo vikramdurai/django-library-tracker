@@ -14,6 +14,16 @@
 </div>
 <form action="{% url 'newpublication' %}" method="POST" class="ui form">
     {% csrf_token %}
+    {% if error %}
+    <div class="ui negative message">
+        <i class="close icon"></i>
+        <div class="header">
+            Error
+        </div>
+        <p>{{ error }}.
+        </p>
+    </div>
+    {% endif %}
     <div class="ui search" id="authorsearch">
         Author of the book: {{ form.author }}
         <div class="results"></div>
