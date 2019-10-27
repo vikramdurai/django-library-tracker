@@ -3,3 +3,4 @@
  social-auth-app-django
  gunicorn
  whitenoise
+ xlsxwriter

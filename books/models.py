@@ -22,6 +22,7 @@ class Author(models.Model):
     def __str__(self):
         return self.name
 
+
 class Series(models.Model):
     num = models.IntegerField(default=0)
     desc = models.CharField(max_length=100)
@@ -33,10 +34,15 @@ class Series(models.Model):
 class Genre(models.Model):
     name = models.CharField(null=True, max_length=200)
     code = models.CharField(null=True, max_length=50)
-    series = models.ForeignKey(Series, on_delete=models.PROTECT, related_name="genres", null=True)
+    series = models.ForeignKey(
+        Series, on_delete=models.PROTECT, related_name="genres", null=True)
 
     def as_list(self):
         return [self.code, self.name]
+
+    def __str__(self):
+        return self.code + " " + self.name
+
 
 class Publication(models.Model):
     # Publication represents a single book title
@@ -48,7 +54,8 @@ class Publication(models.Model):
     img = models.URLField(null=True)
     code = models.CharField(max_length=100, null=True, blank=True)
     available_goodreads = models.BooleanField(default=False)
-    genre_type = models.ForeignKey(Genre, null=True, on_delete=models.SET_NULL, related_name="publications")
+    genre_type = models.ForeignKey(
+        Genre, null=True, on_delete=models.SET_NULL, related_name="publications")
     genre = models.CharField(max_length=200, null=True)
     price = models.IntegerField(null=True)
     slug = models.SlugField(max_length=255)
@@ -62,7 +69,7 @@ class Publication(models.Model):
 
     def get_copies(self):
         return Book.objects.filter(publication=self)
-    
+
     @staticmethod
     def get_all_with_images():
         return Publication.objects.all().exclude(img=None).all()
@@ -70,8 +77,10 @@ class Publication(models.Model):
     def __str__(self):
         return self.title
 
+
 class Book(models.Model):
-    publication = models.ForeignKey(Publication, null=True)
+    publication = models.ForeignKey(
+        Publication, null=True, related_name="editions")
     date_added = models.DateField("Date added to the library", null=True)
     acc = models.CharField(max_length=200, null=True)
     library = models.ForeignKey(Library, null=True, on_delete=models.PROTECT)

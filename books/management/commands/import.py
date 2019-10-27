@@ -111,7 +111,12 @@ def i_genres(csv_filename):
                 print("current series is now", current_series.desc)
                 continue
 
-            g, ok = Genre.objects.get_or_create(name=row[2], code=row[1], series=current_series)
+            def get_code_and_sanitize(r):
+                return r.split()[0].lstrip('"').rstrip('"')
+            
+            g, created = Genre.objects.get_or_create(name=row[2], code=get_code_and_sanitize(row[0]), series=current_series)
+            if created:
+                print("created new genre:", g.code, g.name, "series:", g.series.desc)
 
 def i_authors(csv_filename):
     with open(csv_filename, newline="") as csv_file:
@@ -150,6 +155,7 @@ def i_publications(csv_filename):
 
             if not row[3]: # blank cell
                 continue
+            print(row)
             pub, ok = Publication.objects.get_or_create(
                 sno=row[1],
                 title=row[3],
@@ -157,7 +163,7 @@ def i_publications(csv_filename):
                 author=Author.objects.get(name=row[2]),
                 available_goodreads=yn_converter(row[8]),
                 genre=row[5],
-                genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
+                genre_type=Genre.objects.filter(name=" ".join(row[5].split()[1:])).first()) 
 
 
 def update_publications(csv_filename):
@@ -171,13 +177,14 @@ def update_publications(csv_filename):
         for row in rows:
             if not row[3]:
                 continue
+            print(row)
             p = Publication.objects.get(
                 sno=row[1],
                 title=row[3],
                 price=int_or_zero(row[4]),
                 available_goodreads=yn_converter(row[8]),
-                genre=row[5],
-                genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
+                genre=row[5])
+            p.genre_type = Genre.objects.get(code=row[5].split()[0])
             p.code = row[6]
             p.save()
 
@@ -200,8 +207,8 @@ def i_books(csv_filename, library):
                 title=row[3],
                 price=int_or_zero(row[4]),
                 available_goodreads=yn_converter(row[8]),
-                genre=row[5],
-                genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
+                genre=row[5])
+                # genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
             except Exception as e:
                 print("i_books: Unexpected error:", str(e))
                 continue
@@ -250,8 +257,8 @@ def update_books(csv_filename):
                 title=row[3],
                 price=int_or_zero(row[4]),
                 available_goodreads=yn_converter(row[8]),
-                genre=row[5],
-                genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
+                genre=row[5])
+                # genre_type=Genre.objects.filter(name=row[5].split()[1:]).first())
             except Exception as e:
                 print("i_books: Unexpected error:", str(e))
                 continue
@@ -260,104 +267,6 @@ def update_books(csv_filename):
                 each.acc = row[7]
                 each.save()
             
-# def i_books(csv_filename):
-#     with open(csv_filename, newline="") as csv_file:
-#         x = csv.reader(csv_file, delimiter=",")
-#         # This code analyzes the data from the CSV
-#         # and converts it into a format suitable for the
-#         # book model in models.Book.
-#         # Here is how I do the conversion. Note that
-#         # with some data from Malhar Library the spreadsheets
-#         # are ordered differently:
-#         # i[0] -> nothing (may vary with some libraries)
-#         # i[1] -> s.no (may vary with some libraries)
-#         # i[2] -> author/publisher
-#         # i[3] -> title
-#         # i[4] -> price (may vary with some libraries)
-#         # i[5] -> genre
-#         # i[6] -> book code (may vary with some libraries)
-#         # i[7] -> accession number (may vary with some libraries)
-#         # i[8] -> availabilty on goodreads (may vary with some libraries)
-#         # i[9] -> date of addition
-
-#         # skip the first three rows
-#         # they are not valid fields
-#         next(x)
-#         next(x)
-#         next(x)
-#         for i in x:
-#             # is this an empty cell?
-#             if not i[3]:
-#                 continue
-#             # Check if the author is already in the
-#             # database. If not, create an entry for them.
-#             a = None
-#             if not list(Author.objects.filter(name=i[2])):
-#                 a = Author(name=i[2])
-#                 a.save()
-#             a = Author.objects.get(name=i[2])
-#             # In the spreadsheet, the available_on_goodreads value
-#             # is a string ("Y" or "") instead of True and False.
-#             # This function converts "Y" and company into True/False.
-
-#             def goodreads_converter(x):
-#                 if x == "Y":
-#                     return True
-#                 return False
-#             p = Publication.objects.filter(code=i[6]).all()
-#             if p:
-#                 # There's an existing copy of the book
-#                 # in the library
-#                 p = p[0]
-
-#                 _dt = None
-#                 dt = None
-#                 try:
-#                     _dt = datetime.strptime(i[9], "%d-%b-%Y")
-#                 except ValueError as e:
-#                     if not i[9] == "":
-#                         _dt = datetime.strptime('0'+i[9], "%d-%B-%Y")
-#                 if _dt:
-#                     dt = _dt.date()
-#                 pass
-#                 b = Book(publication=p, library=Library.objects.get(name='Good Earth Malhar Library'), acc=i[7], date_added=dt)
-#                 b.save()
-#             else:
-#                 # This is a completely new book
-#                 # Create the book using the data, and save it
-#                 p = None
-#                 if i[5].startswith("C"):
-#                     # this is a comic
-#                     comics = Series.objects.get(num=100)
-#                     genre_ = Genre.objects.filter(series=comics).first()
-#                     count = len()
-#                     Publication.objects.get_or_create(
-#                         title=i[2],
-#                         author=Author.objects.get_or_c(name=i[4]))
-#                 elif i[6].startswith("EM"):
-#                     # this is a magazine
-#                 else:
-#                     p = Publication(sno=i[1], author=a, title=i[3], price=(lambda x: int(x) if x else 0)(i[4]),
-#                                     genre_type=Genre.objects.filter(name=i[5][4:], code=i[5][:3]).first(), genre=i[5],
-#                                     available_goodreads=goodreads_converter(
-#                                         i[8]))
-#                 p.save()
-#                 print(i[9])
-#                 _dt = None
-#                 dt = None
-#                 try:
-#                     _dt = datetime.strptime(i[9], "%d-%b-%Y")
-#                 except ValueError as e:
-#                     if not i[9] == "":
-#                         _dt = datetime.strptime('0'+i[9], "%d-%B-%Y")
-#                 if _dt:
-#                     dt = _dt.date()
-#                 pass
-#                 b = Book(publication=p, library=Library.objects.get(name='Good Earth Malhar Library'), acc=i[7], date_added=dt)
-#                 b.save()
-#             b.save()
-
-
 def i_register(csv_filename):
     with open(csv_filename, newline="") as csv_file:
         x = csv.reader(csv_file, delimiter=",")
@@ -417,29 +326,6 @@ class Command(BaseCommand):
                             help="CSV file input to import")
 
     def handle(self, *args, **options):
-        # if options["all"]:
-        #     csv_files = [
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 1_TODDLER.csv",
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 7_YOUNG_ADULT.csv",
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 6_YOUNG_READER.csv",
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 7_YOUNG_ADULT.csv",
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 8_FICTION_ADULT.csv",
-        #         "spreadsheets/Sat_1492019-catalogue/ML_Catalogue.xlsx - 9_NONFICTION_ADULT.csv",
-        #     ]
-        #     register = "spreadsheets/register.csv"
-        #     key = "spreadsheets/ready_key.csv"
-            
-        #     i_series(key)
-        #     i_genres(key)
-            
-        #     for i in csv_files:    
-        #         i_books(i)
-            
-        #     print("Loaded books")
-        #     makeborrowers()
-        #     print("Loaded borrowers")
-        #     i_register(register)
-        #     print("Loaded register")
 
         csv_filename = options["file"]
 
@@ -465,11 +351,11 @@ class Command(BaseCommand):
         
         if options["input"] == "books":
             i_books(csv_filename, "Good Earth Malhar Library")
-            print("Loaded publications")
+            print("Loaded books")
         
         if options["input"] == "update_books":
             update_books(csv_filename)
-            print("Updated publications")
+            print("Updated books")
 
         elif options["input"] == "register":
             i_register(csv_filename)

@@ -206,10 +206,16 @@ def new_publication(request):
     if request.method == "POST":
         form = NewPubForm(request.POST)
         if form.is_valid():
+            a = None
+            try:
+                a = Author.objects.get(name=form.cleaned_data["author"])
+            except Author.DoesNotExist:
+                a = Author(name=form.cleaned_data["author"])
+                a.save()
             p = Publication(
                 sno=form.cleaned_data["sno"],
                 title=form.cleaned_data["title"],
-                author=Author.objects.get(name=form.cleaned_data["author"]),
+                author=a,
                 code=form.cleaned_data["code"],
                 available_goodreads=form.cleaned_data["avgood"],
                 genre=form.cleaned_data["genre"],
