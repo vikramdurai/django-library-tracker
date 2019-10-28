@@ -1,6 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
-from books.models import *
-import xlsxwriter
+from .models import *
 
 
 def export_from_series(series_code):
@@ -43,36 +41,3 @@ def export_key():
                 [g.code, g.name.upper(), len(g.publications.all())])
 
     return what_to_write
-
-
-class Command(BaseCommand):
-    help = "Exports data from the model into a .xlsx file"
-
-    def add_arguments(self, parser):
-        parser.add_argument("--series", type=str,
-                            help="Codes for series to import (as in '700 800' & the like)")
-
-    def handle(self, *args, **options):
-        nseries_names = options["series"].split()
-        workbook = xlsxwriter.Workbook("out.xlsx")
-        w = workbook.add_worksheet("CATALOGUE KEY")
-        ckdata = export_key()
-        for row_num, columns in enumerate(ckdata):
-            for col_num, cell_data in enumerate(columns):
-                w.write(row_num, col_num, cell_data)
-        print("wrote the catalogue key")
-        for name in nseries_names:
-            data, ok = export_from_series(name)
-            if not ok:
-                break
-            s = Series.objects.get(num=name)
-
-            worksheet = workbook.add_worksheet(
-                str(s.num)[0]+"_"+s.desc.upper().replace(" ", "_"))
-
-            for row_num, columns in enumerate(data):
-                for col_num, cell_data in enumerate(columns):
-                    worksheet.write(row_num, col_num, cell_data)
-            print("Done:", str(s))
-
-        workbook.close()

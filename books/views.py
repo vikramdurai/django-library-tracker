@@ -11,9 +11,12 @@ from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 
 from .forms import SearchForm, ExtendForm, CheckoutForm, UserStaffForm, NewBookForm, NewPubForm, UserConfigForm
-from .models import Library, Author, Book, Publication, UserStaff, UserMember, UserJoinRequest, RegisterEntry, ExtendLog, Borrower
-from datetime import timedelta
+from .models import Library, Series, Genre, Author, Book, Publication, UserStaff, UserMember, UserJoinRequest, RegisterEntry, ExtendLog, Borrower
+from datetime import timedelta, datetime
 from json import dumps
+from .utils import *
+import xlsxwriter
+import io
 
 def staff(request):
     try:
@@ -176,6 +179,43 @@ def approve_requests(request):
         return redirect("pendingrequests")
     return redirect("pendingrequests")
     
+
+@login_required
+def export_data(request):
+    output = io.BytesIO()
+    s_string = "100 600 700 800 900"
+
+    nseries_names = s_string.split()
+    workbook = xlsxwriter.Workbook(output)
+    w = workbook.add_worksheet("CATALOGUE KEY")
+    ckdata = export_key()
+    for row_num, columns in enumerate(ckdata):
+        for col_num, cell_data in enumerate(columns):
+            w.write(row_num, col_num, cell_data)
+    print("wrote the catalogue key")
+    for name in nseries_names:
+        data, ok = export_from_series(name)
+        if not ok:
+            break
+        s = Series.objects.get(num=name)
+        worksheet = workbook.add_worksheet(
+                str(s.num)[0]+"_"+s.desc.upper().replace(" ", "_"))
+        for row_num, columns in enumerate(data):
+            for col_num, cell_data in enumerate(columns):
+                worksheet.write(row_num, col_num, cell_data)
+        print("Done:", str(s))
+    workbook.close()
+    output.seek(0)
+     # Set up the Http response.
+    dstring = datetime.today().strftime("%d%m%Y")
+    filename = 'ML_Catalogue_%s.xlsx' % dstring
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return response
+
 
 # new_book
 @login_required

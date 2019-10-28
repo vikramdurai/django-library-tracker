@@ -29,5 +29,6 @@ urlpatterns = [
     url(r'^apisearch', views.api_search, name="apisearch"),
     url(r'^api_get_borrowed_books', views.api_view_borrowed_books,
         name="api_get_borrowed_books"),
+    url(r'^exportdata', views.export_data, name="exportdata"),
     url(r'^api_homepage', views.api_homepage, name="api_homepage")
 ]
