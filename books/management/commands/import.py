@@ -26,6 +26,23 @@ def yn_converter(x):
         return False
     return False
 
+def date_processor(x):
+    book_date = None
+    try:
+        book_date = datetime.strptime(x, "%d-%b-%Y")
+    except ValueError: # sometimes the format of the date is wrong
+        if x.split()[0][0] == "0" or len(x.split()[0]) >= 2: # it doesn't have to do with the day field
+            date_construct = x.split("-")
+            if len(date_construct[1]) != 3:
+                # the month field is not abbreviated
+                # this converts the string "07-April-2018" into "07-Apr-2018"
+                new_str = date_construct[0] + "-" + date_construct[1][:3] + "-" + date_construct[2]
+                book_date = datetime.strptime(new_str, "%d-%b-%Y")
+        else: # wrong day field
+            # usually fixed by added a zero
+            book_date = datetime.strptime('0'+row[9], "%d-%B-%Y")
+    return book_date
+
 
 def makeborrowers():
     # This code generates all addresses in GoodEarth Malhar
@@ -87,7 +104,9 @@ def i_series(csv_filename):
             if "SERIES" in row[1]:
                 data = row[1].split()
                 # create the series
-                s, created = Series.objects.get_or_create(num=int(data[0]), desc=" ".join(data[3:]))
+                _, created = Series.objects.get_or_create(num=int(data[0]), desc=" ".join(data[3:]))
+                if created:
+                    print("created new series:", str(s))
                 continue
 
 
@@ -128,6 +147,76 @@ def i_authors(csv_filename):
         for row in rows:
             a, ok = Author.objects.get_or_create(name=row[2])
 
+def i_comics(csv_filename):
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        # skip useless rows
+        next(rows)
+        next(rows)
+        next(rows)
+
+        for row in rows:
+            # row structure for comics:
+            # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> author
+            # row[5] -> code
+            # row[6] -> acc #
+            # row[8] -> d.o.a
+
+            # check if blank
+            if not row[2]:
+                continue
+
+            a, created = Author.objects.get_or_create(name=row[4])
+            if created:
+                print("created new author for comics:", a.name)
+
+            _, created = Publication.objects.get_or_create(
+                sno=row[1],
+                title=row[2],
+                price=row[3],
+                author=a)
+
+def i_magazines(csv_filename):
+    print("inside i_mags")
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        # skip useless rows
+        next(rows)
+        next(rows)
+        next(rows)
+
+        for row in rows:
+            # row structure for comics:
+            # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> code
+            # row[5] -> acc #
+            # row[7] -> d.o.a (blank)
+
+            # check if blank
+            print("inside for loop")
+            if not row[2]:
+                continue
+            # magazines don't have an author
+            a, created = Author.objects.get_or_create(name="None")
+            if created:
+                print("created new author for magazines:", a.name)
+
+            _, created = Publication.objects.get_or_create(
+                sno=row[1],
+                title=row[2],
+                price=int_or_zero(row[3]),
+                author=a)
+            if created:
+                print("created a magazine")
+
+
 def i_publications(csv_filename):
     ### dont use book codes
 
@@ -138,10 +227,25 @@ def i_publications(csv_filename):
         next(rows)
         next(rows)
 
+
+        # the rows in the comics sheet and the magazine sheet are inconsistent
+        # with the rows of every other
+        test_if_special = list(rows)[0]
+        # the comics have "C" at the start of their book codes
+        if test_if_special[5].startswith("C"):
+            i_comics(csv_filename)
+            return
+        # whereas the magazines have "EM"
+        if test_if_special[4].startswith("EM"):
+            print("inside if")
+            i_magazines(csv_filename)
+            return
+
         # iterate over every row, and
         # do a get or create for Publications model
         for row in rows:
-            # how each row is constructed:
+
+            # how each row is constructed normally:
             # row[0] -> nothing
             # row[1] -> s.no
             # row[2] -> author/publisher
@@ -152,18 +256,78 @@ def i_publications(csv_filename):
             # row[7] -> accession number
             # row[8] -> availabilty on goodreads 
             # row[9] -> date of addition
-
             if not row[3]: # blank cell
                 continue
-            print(row)
-            pub, ok = Publication.objects.get_or_create(
+
+            _, created = Publication.objects.get_or_create(
                 sno=row[1],
                 title=row[3],
                 price=int_or_zero(row[4]),
                 author=Author.objects.get(name=row[2]),
                 available_goodreads=yn_converter(row[8]),
                 genre=row[5],
-                genre_type=Genre.objects.filter(name=" ".join(row[5].split()[1:])).first()) 
+                genre_type=Genre.objects.filter(name=" ".join(row[5].split()[1:])).first())
+            if created:
+                print("created new publication:", _.title)
+
+def update_comics(csv_filename):
+    # old and new book code updating
+    print("im in")
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        print("ok")
+        for row in rows:
+            if not row[2]:
+                continue
+
+            c, created = Genre.objects.get_or_create(code="0.00", name="COMICS", series=Series.objects.get(num=0))
+            if created:
+                print("comics genre did not exist, created..")
+                
+            a = Author.objects.get(name=row[4])
+            print("got author")
+            p = Publication.objects.get(
+                sno=row[1],
+                title=row[2],
+                price=row[3],
+                author=a)
+            print("got publication")
+            p.genre_type = c
+            p.genre = str(c)
+            print("set genre type", str(c))
+            p.code = row[5]
+            p.save()
+
+def update_magazines(csv_filename):
+    # old and new book code updating
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        
+        for row in rows:
+            if not row[2]:
+                continue
+
+            c, created = Genre.objects.get_or_create(code="2.00", name="MAGAZINES", series=Series.objects.get(num=200))
+            if created:
+                print("comics genre did not exist, created..")
+
+            # magazines don't have an author
+            a = Author.objects.get(name="None")
+            p = Publication.objects.get(
+                sno=row[1],
+                title=row[2],
+                price=int_or_zero(row[3]),
+                author=a)
+            p.genre = str(c)
+            p.genre_type = c
+            p.code = row[5]
+            p.save()
 
 
 def update_publications(csv_filename):
@@ -174,6 +338,17 @@ def update_publications(csv_filename):
         next(rows)
         next(rows)
         
+        test_if_special = list(rows)[0]
+        # comics book codes start with "C"
+        if test_if_special[5].startswith("C"):
+            print("comics")
+            update_comics(csv_filename)
+            return
+        # whereas the magazines have "EM"
+        if test_if_special[4].startswith("EM"):
+            update_magazines(csv_filename)
+            return
+
         for row in rows:
             if not row[3]:
                 continue
@@ -194,7 +369,17 @@ def i_books(csv_filename, library):
         next(rows)
         next(rows)
         next(rows)
-        
+
+        test_if_special = list(rows)[0]
+        # comics book codes start with "C"
+        if test_if_special[5].startswith("C"):
+            books_comics(csv_filename, library)
+            return
+        # whereas the magazines have "EM"
+        if test_if_special[4].startswith("EM"):
+            books_magazines(csv_filename, library)
+            return
+
         for row in rows:
             if not row[3]:
                 continue
@@ -220,23 +405,158 @@ def i_books(csv_filename, library):
                  b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library))
                  continue
 
-            book_date = None
-            try:
-                book_date = datetime.strptime(row[9], "%d-%b-%Y")
-            except ValueError: # sometimes the format of the date is wrong
-                if row[9].split()[0][0] == "0" or len(row[9].split()[0]) >= 2: # it doesn't have to do with the day field
-                    date_construct = row[9].split("-")
-                    if len(date_construct[1]) != 3:
-                        # the month field is not abbreviated
-                        # this converts the string "07-April-2018" into "07-Apr-2018"
-                        new_str = date_construct[0] + "-" + date_construct[1][:3] + "-" + date_construct[2]
-                        book_date = datetime.strptime(new_str, "%d-%b-%Y")
+            b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library), date_added=date_processor(row[9]).date())
 
-                else: # wrong day field
-                    # usually fixed by added a zero
-                    book_date = datetime.strptime('0'+row[9], "%d-%B-%Y")
+def books_comics(csv_filename, library):
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        
+        for row in rows:
+            # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> code
+            # row[5] -> acc #
+            # row[8] -> d.o.a (blank)
+            if not row[2]:
+                continue
+
+            c, created = Genre.objects.get_or_create(code="0.00", name="COMICS", series=Series.objects.get(num=0))
+            if created:
+                print("comics genre did not exist, created..")
+
+            # get parent publication
+            pub = None
+            try:
+                pub = Publication.objects.get(
+                sno=row[1],
+                title=row[2])
+            except Exception as e:
+                print("books_comics: Unexpected error:", str(e), "row:", row)
+                continue
             
-            b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library), date_added=book_date.date())
+            # create the dates
+
+            if not row[8]: # the date field is empty
+                 print("books_comics: found empty date field for book #" + row[7] + ", proceeding to create")
+                 b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library))
+                 continue
+                
+            b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library), date_added=date_processor(row[8]).date())
+
+def books_magazines(csv_filename, library):
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        
+        for row in rows:
+            # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> code
+            # row[5] -> acc #
+            # row[7] -> d.o.a (blank)
+            if not row[2]:
+                continue
+
+            m, created = Genre.objects.get_or_create(code="2.00", name="MAGAZINES", series=Series.objects.get(num=200))
+            if created:
+                print("magazines genre did not exist, created..")
+
+            # get parent publication
+            pub = None
+            try:
+                pub = Publication.objects.get(
+                sno=row[1],
+                title=row[2])
+            except Exception as e:
+                print("books_magazines: Unexpected error:", str(e))
+                continue
+            
+            # create the dates
+
+            if not row[7]: # the date field is empty
+                 print("books_magazines: found empty date field for book #" + row[5] + ", proceeding to create")
+                 b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library))
+                 continue
+                
+            b = Book.objects.get_or_create(publication=pub, library=Library.objects.get(name=library), date_added=date_processor(row[7]).date())
+
+def update_comics_books(csv_filename):
+    # old and new book acc updating
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> code
+            # row[5] -> acc #
+            # row[8] -> d.o.a (blank)
+        for row in rows:
+            if not row[2]:
+                continue
+            c, created = Genre.objects.get_or_create(code="0.00", name="COMICS", series=Series.objects.get(num=0))
+            if created:
+                print("comics genre did not exist, created..")
+            # get parent publication
+            pub = None
+            try:
+                pub = Publication.objects.get(
+                sno=row[1],
+                title=row[2])
+            except Exception as e:
+                print("update_comics: Unexpected error:", str(e), "row:", row)
+                continue
+            books = Book.objects.filter(publication=pub).all()
+            for each in books:
+                each.acc = row[5]
+                each.save()
+
+def update_magazines_books(csv_filename):
+    # old and new book acc updating
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        next(rows)
+        next(rows)
+        next(rows)
+        # row[0] -> empty
+            # row[1] -> s. no
+            # row[2] -> title
+            # row[3] -> price
+            # row[4] -> code
+            # row[5] -> acc #
+            # row[7] -> d.o.a (blank)
+        for row in rows:
+            if not row[2]:
+                continue
+            m, created = Genre.objects.get_or_create(code="2.00", name="MAGAZINES", series=Series.objects.get(num=200))
+            if created:
+                print("magazines genre did not exist, created..")
+            # get parent publication
+            pub = None
+            try:
+                pub = Publication.objects.get(
+                sno=row[1],
+                title=row[2],
+                price=int_or_zero(row[3]))
+            except Exception as e:
+                print("update_magazines: Unexpected error:", str(e))
+                continue
+            books = Book.objects.filter(publication=pub).all()
+            for each in books:
+                each.acc = row[5]
+                each.save()
 
 def update_books(csv_filename):
     # old and new book acc updating
@@ -245,7 +565,16 @@ def update_books(csv_filename):
         next(rows)
         next(rows)
         next(rows)
-        
+        test_if_special = list(rows)[0]
+        # comics book codes start with "C"
+        if test_if_special[5].startswith("C"):
+            update_comics_books(csv_filename)
+            return
+        # whereas the magazines have "EM"
+        if test_if_special[4].startswith("EM"):
+            update_magazines_books(csv_filename)
+            return
+
         for row in rows:
             if not row[3]:
                 continue
