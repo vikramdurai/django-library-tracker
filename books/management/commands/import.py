@@ -637,8 +637,13 @@ def i_register(csv_filename):
                         # for "19" instead of "2019"
                         book_entry_date = datetime.strptime(row[3], "%d-%b-%y")
             book_entry_date = (book_entry_date - timedelta(days=10)).date()
-
-            r, created = RegisterEntry.objects.get_or_create(borrower=borrower, book=book)
+            r = None
+            created = None
+            try:
+                r, created = RegisterEntry.objects.get_or_create(borrower=borrower, book=book)
+            except MultipleObjectsReturned:
+                print("[NOTE] multiple objects returned, row:", row)
+                continue
             if created:
                 r.library = Library.objects.get(id=1)
                 r.borrower = borrower
