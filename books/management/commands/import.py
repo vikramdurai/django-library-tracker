@@ -61,6 +61,27 @@ def i_borrowers(csv_filename):
             if created:
                 print("[NOTE] created new borrower, row:", row)
 
+def update_borrowers(csv_filename):
+    print("yo!")
+    with open(csv_filename, newline="") as csv_file:
+        rows = csv.reader(csv_file, delimiter=",")
+        # skip first three rows, they're useless
+        next(rows)
+        next(rows)
+        next(rows)
+
+        for row in rows:
+            # row map:
+            # row[0] - the project where the borrower is located, e.g Footprints
+            # row[1] - the house
+            # row[2] - the project and house abbreviated, e.g FP-A1 means Footprints A1
+            # row[3] - the name of the main borrower, NR if null
+            # row[4] - the phone number of the borrower, blank if null
+            b = Borrower.objects.get(name=parseaddrs(row[2]))
+            b.person = row[3]
+            b.pn = row[4]
+            b.save()
+            print("saved borrower #", b.pk)
 # parse addresses in register
 def parseaddrs(x):
     # Good Earth Malhar's address data is in the format
@@ -751,3 +772,8 @@ class Command(BaseCommand):
         elif options["input"] == "borrowers":
             i_borrowers(csv_filename)
             print("Loaded borrowers")
+
+        elif options["input"] == "update_borrowers":
+            print("yooooo")
+            update_borrowers(csv_filename)
+            print("Updated borrowers")

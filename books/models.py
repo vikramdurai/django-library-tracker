@@ -93,7 +93,8 @@ class Borrower(models.Model):
     # address = models.ForeignKey("Address", on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=300)
     slug = models.SlugField(max_length=40)
-
+    person = models.CharField(max_length=300, null=True)
+    pn = models.CharField(max_length=50, null=True)
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
@@ -101,6 +102,10 @@ class Borrower(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def abbrev(self):
+        s = self.name.replace(",", "").split()
+        return s[1][0:2].upper() + "-" + s[0]
 
 
 class UserJoinRequest(models.Model):
@@ -179,6 +184,10 @@ class RegisterEntry(models.Model):
         borrowed_entries_that_are_not_in_returned_entries = all_borrowed_entries.exclude(
             book__in=all_returned_entries)
         return borrowed_entries_that_are_not_in_returned_entries
+    
+    @staticmethod
+    def get_all_under_borrower(borrower):
+        return RegisterEntry.get_all_borrowed_entries().filter(borrower=borrower)
 
     @staticmethod
     def is_borrowed(b):

@@ -84,8 +84,11 @@
                     Add a book title to the library
                 </a>
                 <div class="ui divider"></div>
-                <a href="{% url 'exportdata' %}" class="item">
-                    Download spreadsheets of the database
+                <a href="{% url 'exportdata' %}?which=series" class="item">
+                    Download catalogue
+                </a>
+                <a href="{% url 'exportdata' %}?which=register" class="item">
+                    Download register
                 </a>
                 <a href="{% url 'addstaff' %}" class="item">
                     Add a staff account

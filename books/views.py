@@ -182,33 +182,50 @@ def approve_requests(request):
 
 @login_required
 def export_data(request):
+    which = request.GET.get("which")
     output = io.BytesIO()
-    s_string = "100 600 700 800 900"
+    if which == "series":
+        s_string = "100 600 700 800 900"
 
-    nseries_names = s_string.split()
-    workbook = xlsxwriter.Workbook(output)
-    w = workbook.add_worksheet("CATALOGUE KEY")
-    ckdata = export_key()
-    for row_num, columns in enumerate(ckdata):
-        for col_num, cell_data in enumerate(columns):
-            w.write(row_num, col_num, cell_data)
-    print("wrote the catalogue key")
-    for name in nseries_names:
-        data, ok = export_from_series(name)
-        if not ok:
-            break
-        s = Series.objects.get(num=name)
-        worksheet = workbook.add_worksheet(
-                str(s.num)[0]+"_"+s.desc.upper().replace(" ", "_"))
+        nseries_names = s_string.split()
+        workbook = xlsxwriter.Workbook(output)
+        w = workbook.add_worksheet("CATALOGUE KEY")
+        ckdata = export_key()
+        for row_num, columns in enumerate(ckdata):
+            for col_num, cell_data in enumerate(columns):
+                w.write(row_num, col_num, cell_data)
+        print("wrote the catalogue key")
+        for name in nseries_names:
+            data, ok = export_from_series(name)
+            if not ok:
+                break
+            s = Series.objects.get(num=name)
+            worksheet = workbook.add_worksheet(
+                    str(s.num)[0]+"_"+s.desc.upper().replace(" ", "_"))
+            for row_num, columns in enumerate(data):
+                for col_num, cell_data in enumerate(columns):
+                    worksheet.write(row_num, col_num, cell_data)
+            print("Done:", str(s))
+        workbook.close()
+        output.seek(0)
+    else:
+        workbook = xlsxwriter.Workbook(output)
+        w = workbook.add_worksheet(
+            "overdue-"+datetime.strftime(datetime.today(), "%b'%y").lower())  # overdue-nov'19
+        data = export_register()
         for row_num, columns in enumerate(data):
             for col_num, cell_data in enumerate(columns):
-                worksheet.write(row_num, col_num, cell_data)
-        print("Done:", str(s))
-    workbook.close()
-    output.seek(0)
+                w.write(row_num, col_num, cell_data)
+        print("Done.")
+        workbook.close()
+        output.seek(0)
      # Set up the Http response.
     dstring = datetime.today().strftime("%d%m%Y")
-    filename = 'ML_Catalogue_%s.xlsx' % dstring
+    filename = None
+    if which == "series":
+        filename = 'ML_Catalogue_%s.xlsx' % dstring
+    else:
+        filename = "Malhar_Library_Register_%s.xlsx" % dstring
     response = HttpResponse(
         output,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
