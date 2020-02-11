@@ -7,7 +7,7 @@
 <div id="cardslist" class="ui stackable four column grid"></div>
 <script>
     function makeHTMLFromJSON(json_) {
-        var starter_template = function (author, ongoodreads, book_url, publication, is_borrowed, date_added, book_acc, book_genre, library) {
+        var starter_template = function (author, ongoodreads, book_url, publication, is_borrowed, borrower, date_added, book_acc, book_genre, library) {
             return `
             <div class="column">
                 <div class="ui fluid card">
@@ -31,14 +31,14 @@
                             Accession number: <strong>${book_acc}</strong> <br>
                             Genre: <strong>${book_genre}</strong> <br>
                             Library: <strong>${library}</strong> <br>
-                            <span style='color:red;'><strong>${is_borrowed ? 'This book is borrowed <br>' : ''}</strong></span>
+                            <span style='color:red;'><strong>${is_borrowed ? 'Currently with ' + borrower + ' <br>' : ''}</strong></span>
                         </div>
                     </div>
 </div>
 </div>
 `;
         };
-        return starter_template(json_["author"], json_["ongoodreads"], json_["book_url"], json_["publication"], json_["is_borrowed"],
+        return starter_template(json_["author"], json_["ongoodreads"], json_["book_url"], json_["publication"], json_["is_borrowed"], json_["borrower"],
             json_["date_added"], json_["book_acc"], json_["book_genre"], json_["library"]);
     }
     var _results = [];

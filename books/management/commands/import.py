@@ -39,7 +39,7 @@ def date_processor(x):
                 book_date = datetime.strptime(new_str, "%d-%b-%Y")
         else: # wrong day field
             # usually fixed by added a zero
-            book_date = datetime.strptime('0'+row[9], "%d-%B-%Y")
+            book_date = datetime.strptime('0'+x, "%d-%B-%Y")
     return book_date
 
 

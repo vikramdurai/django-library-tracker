@@ -71,10 +71,10 @@
                 <div class="ui divider"></div>
                 {% if user_staff %}
                 <a href="{% url 'borrowed_books' %}" class="item">
-                    Checkin a book
+                    Return a book
                 </a>
                 <a href="{% url 'checkout' %}" class="item">
-                    Checkout a book
+                    Issue a book
                 </a>
                 <div class="ui divider"></div>
                 <a href="{% url 'newbook' %}" class="item">
@@ -181,9 +181,9 @@
         }); // end open sidebar
 
         // sidebar close on content click
-        $("#content").on("click", function () {
-            sidebar.velocity("reverse")
-            dark.velocity(fadeOut, 300)
+        $("body").on("click", function () {
+            sidebar.velocity("reverse");
+            dark.velocity(fadeOut, 300);
             main.velocity("reverse");
             body.removeClass("noscroll");
         }); // end close sidebar
